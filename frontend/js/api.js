@@ -7,7 +7,7 @@
 const API_BASE_URL = localStorage.getItem('tp_api_url') || 
   ((window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
     ? 'http://localhost:5000/api'
-    : 'https://YOUR_HUGGING_FACE_BACKEND_URL/api');
+    : '/api');
 
 const apiClient = {
   getHeaders() {

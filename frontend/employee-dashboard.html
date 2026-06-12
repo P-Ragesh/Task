@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TaskPilot Enterprise — Employee Dashboard</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="css/dashboard.css">
+  <link rel="stylesheet" href="css/animations.css">
+</head>
+<body>
+
+  <div class="app-container" id="app-shell">
+    
+    <!-- Sidebar Container -->
+    <aside class="sidebar" id="sidebar-container"></aside>
+
+    <!-- Main Viewport -->
+    <main class="main-viewport">
+      
+      <!-- Top Navigation -->
+      <header class="top-nav" id="navbar-container"></header>
+
+      <!-- Content viewport -->
+      <div class="content-area animate-fade-in">
+        
+        <div class="page-header">
+          <div class="page-title">
+            <h1>My Tasks Console</h1>
+            <p>Check deadlines, review workloads, and update assignment status.</p>
+          </div>
+        </div>
+
+        <!-- Employee KPIs -->
+        <div class="kpi-row">
+          <div class="card kpi-card blue">
+            <div class="kpi-icon-wrap"><i class="ti ti-checkbox"></i></div>
+            <div class="kpi-content">
+              <div class="kpi-number" id="emp-kpi-assigned">0</div>
+              <div class="kpi-title">Assigned Tasks</div>
+            </div>
+          </div>
+          <div class="card kpi-card success">
+            <div class="kpi-icon-wrap"><i class="ti ti-circle-check"></i></div>
+            <div class="kpi-content">
+              <div class="kpi-number" id="emp-kpi-completed">0</div>
+              <div class="kpi-title">Completed Tasks</div>
+            </div>
+          </div>
+          <div class="card kpi-card warning">
+            <div class="kpi-icon-wrap"><i class="ti ti-adjustments-horizontal"></i></div>
+            <div class="kpi-content">
+              <div class="kpi-number" id="emp-kpi-inprogress">0</div>
+              <div class="kpi-title">In Progress Tasks</div>
+            </div>
+          </div>
+          <div class="card kpi-card danger">
+            <div class="kpi-icon-wrap"><i class="ti ti-clock"></i></div>
+            <div class="kpi-content">
+              <div class="kpi-number" id="emp-kpi-pending">0</div>
+              <div class="kpi-title">Pending Tasks</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Main Grid -->
+        <div class="grid-2col" style="grid-template-columns: 2fr 1fr; gap: 24px;">
+          
+          <!-- Tasks Table -->
+          <div class="card" style="padding: 0;">
+            <div class="card-title-bar" style="padding: 24px 24px 0; margin-bottom: 8px;">
+              <h3>My Work Allocations</h3>
+            </div>
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Task Name</th>
+                    <th>Priority</th>
+                    <th>Status</th>
+                    <th>Due Date</th>
+                    <th>Remarks</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody id="employee-task-table-body">
+                  <!-- JS populated -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Personal Transition Logs -->
+          <div class="card">
+            <div class="card-title-bar">
+              <h3>My Activity Log</h3>
+            </div>
+            <div id="employee-recent-logs" style="max-height: 380px; overflow-y: auto;">
+              <!-- History timeline -->
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </main>
+  </div>
+
+  <!-- MODAL: EMPLOYEE UPDATE STATUS -->
+  <div class="modal-backdrop" id="status-update-modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Update Task Progress</h3>
+        <button class="close-modal-btn" onclick="closeStatusUpdateModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="status-update-form" onsubmit="handleStatusUpdateFormSubmit(event)">
+          <input type="hidden" id="status-task-id">
+          <div class="form-group">
+            <label>Allocated Task</label>
+            <input type="text" id="status-task-title" class="form-control" disabled>
+          </div>
+          <div class="form-group">
+            <label>Target Status</label>
+            <select id="status-task-select" class="form-control" required onchange="toggleCompletionNoteRequired(this.value)">
+              <option value="todo">Pending (To Do)</option>
+              <option value="inprogress">In Progress</option>
+              <option value="completed">Completed</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label id="completion-note-label">Work Progress / Completion Note</label>
+            <textarea id="status-task-note" class="form-control" style="height: 100px;" placeholder="Describe details, steps, or issues encountered..."></textarea>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeStatusUpdateModal()">Cancel</button>
+        <button type="submit" form="status-update-form" class="btn btn-primary">Save Status Update</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast-container" id="toast-container"></div>
+
+  <!-- Scripts -->
+  <script src="js/api.js"></script>
+  <script src="js/validation.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/app.js"></script>
+  <script src="js/dashboard.js"></script>
+  <script src="js/task.js"></script>
+  <script>
+    window.addEventListener('DOMContentLoaded', () => {
+      auth.checkSession('employee');
+      loadEmployeeDashboard();
+    });
+  </script>
+</body>
+</html>

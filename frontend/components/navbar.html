@@ -1,0 +1,21 @@
+<div class="nav-left">
+  <button class="hamburger-btn" id="menu-toggle" onclick="toggleMobileSidebar()">
+    <i class="ti ti-menu-2"></i>
+  </button>
+  <div class="global-search" style="position: relative;">
+    <i class="ti ti-search"></i>
+    <input type="text" id="global-search-input" placeholder="Search tasks..." oninput="handleGlobalSearch(this.value)" autocomplete="off">
+    <div id="search-results-dropdown" class="search-results-dropdown" style="display: none;"></div>
+  </div>
+</div>
+
+<div class="nav-right">
+  <!-- Theme Switcher -->
+  <button class="nav-action-btn theme-toggle" onclick="toggleTheme()" title="Toggle Light/Dark Theme">
+    <i class="ti ti-sun" id="theme-icon"></i>
+  </button>
+  
+  <button class="nav-action-btn" onclick="handleLogout()" title="Log Out">
+    <i class="ti ti-logout"></i>
+  </button>
+</div>

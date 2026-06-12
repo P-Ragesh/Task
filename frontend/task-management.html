@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TaskPilot Enterprise — Task Management</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="css/dashboard.css">
+  <link rel="stylesheet" href="css/animations.css">
+</head>
+<body>
+
+  <div class="app-container" id="app-shell">
+    
+    <!-- Sidebar Container -->
+    <aside class="sidebar" id="sidebar-container"></aside>
+
+    <!-- Main Viewport -->
+    <main class="main-viewport">
+      
+      <!-- Top Navigation -->
+      <header class="top-nav" id="navbar-container"></header>
+
+      <!-- Content viewport -->
+      <div class="content-area animate-fade-in">
+        
+        <div class="page-header">
+          <div class="page-title">
+            <h1>Task Management Console</h1>
+            <p>Configure tasks, track assignments, and edit statuses.</p>
+          </div>
+          <div class="page-actions">
+            <div class="tab-pills">
+              <button class="tab-pill active" onclick="switchTaskLayout('kanban')" id="pill-layout-kanban"><i class="ti ti-columns"></i> Kanban</button>
+              <button class="tab-pill" onclick="switchTaskLayout('list')" id="pill-layout-list"><i class="ti ti-list"></i> List View</button>
+            </div>
+            <button class="btn btn-primary btn-sm" onclick="openNewTaskModal()"><i class="ti ti-plus"></i> New Task</button>
+          </div>
+        </div>
+
+        <!-- Filters Row -->
+        <div class="card filters-bar" style="padding: 14px 20px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center;">
+          <div class="filters-left" style="display: flex; gap: 12px; align-items: center;">
+            <div class="global-search" style="display: flex; width: 220px; padding: 6px 12px;">
+              <i class="ti ti-search"></i>
+              <input type="text" id="admin-task-search" placeholder="Search tasks..." oninput="renderAdminTasksView()">
+            </div>
+            <select id="admin-task-priority-filter" class="form-control" style="width: 150px; padding: 6px 12px;" onchange="renderAdminTasksView()">
+              <option value="All">All Priorities</option>
+              <option value="High">High</option>
+              <option value="Medium">Medium</option>
+              <option value="Low">Low</option>
+            </select>
+            <select id="admin-task-assignee-filter" class="form-control" style="width: 180px; padding: 6px 12px;" onchange="renderAdminTasksView()">
+              <option value="All">All Assignees</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- KANBAN BOARD -->
+        <div class="kanban-view" id="admin-task-layout-kanban">
+          <div class="kanban-column" id="admin-col-todo">
+            <div class="kanban-header">
+              <div class="column-title-wrap">
+                <span class="column-dot"></span>
+                <span class="column-title">Pending (To Do)</span>
+              </div>
+              <span class="column-count" id="admin-count-todo">0</span>
+            </div>
+            <div class="kanban-cards" ondragover="allowDrop(event)" ondrop="handleDrop(event, 'todo')" ondragenter="dragEnter(event)" ondragleave="dragLeave(event)">
+              <!-- Cards -->
+            </div>
+          </div>
+
+          <div class="kanban-column" id="admin-col-inprogress">
+            <div class="kanban-header">
+              <div class="column-title-wrap">
+                <span class="column-dot"></span>
+                <span class="column-title">In Progress</span>
+              </div>
+              <span class="column-count" id="admin-count-inprogress">0</span>
+            </div>
+            <div class="kanban-cards" ondragover="allowDrop(event)" ondrop="handleDrop(event, 'inprogress')" ondragenter="dragEnter(event)" ondragleave="dragLeave(event)">
+              <!-- Cards -->
+            </div>
+          </div>
+
+          <div class="kanban-column" id="admin-col-completed">
+            <div class="kanban-header">
+              <div class="column-title-wrap">
+                <span class="column-dot"></span>
+                <span class="column-title">Completed</span>
+              </div>
+              <span class="column-count" id="admin-count-completed">0</span>
+            </div>
+            <div class="kanban-cards" ondragover="allowDrop(event)" ondrop="handleDrop(event, 'completed')" ondragenter="dragEnter(event)" ondragleave="dragLeave(event)">
+              <!-- Cards -->
+            </div>
+          </div>
+        </div>
+
+        <!-- LIST VIEW -->
+        <div class="card" id="admin-task-layout-list" style="display: none; padding: 0;">
+          <div class="table-responsive">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Task Name</th>
+                  <th>Priority</th>
+                  <th>Status</th>
+                  <th>Assignee</th>
+                  <th>Due Date</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="admin-task-list-tbody">
+                <!-- JS populated -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+    </main>
+  </div>
+
+  <!-- MODAL: ADMIN ASSIGN/EDIT TASK -->
+  <div class="modal-backdrop" id="task-modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="task-modal-title">Assign Task</h3>
+        <button class="close-modal-btn" onclick="closeTaskModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="task-form" onsubmit="handleTaskFormSubmit(event)">
+          <input type="hidden" id="task-form-id">
+          <div class="form-group">
+            <label>Task Title</label>
+            <input type="text" id="task-form-title" class="form-control" placeholder="e.g. Code database connection queries" required>
+          </div>
+          <div class="form-group">
+            <label>Description</label>
+            <textarea id="task-form-desc" class="form-control" style="height: 80px;" placeholder="Brief details about the task workload..." required></textarea>
+          </div>
+          <div class="grid-2col" style="gap: 12px; margin-bottom: 0;">
+            <div class="form-group">
+              <label>Assign Employee</label>
+              <select id="task-form-assignee" class="form-control" required>
+                <!-- JS populated -->
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Priority</label>
+              <select id="task-form-priority" class="form-control" required>
+                <option value="Low">Low</option>
+                <option value="Medium" selected>Medium</option>
+                <option value="High">High</option>
+              </select>
+            </div>
+          </div>
+          <div class="grid-2col" style="gap: 12px; margin-bottom: 0;">
+            <div class="form-group">
+              <label>Due Date</label>
+              <input type="date" id="task-form-duedate" class="form-control" required>
+            </div>
+            <div class="form-group">
+              <label>Status</label>
+              <select id="task-form-status" class="form-control" required>
+                <option value="todo">Pending (To Do)</option>
+                <option value="inprogress">In Progress</option>
+                <option value="completed">Completed</option>
+              </select>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeTaskModal()">Cancel</button>
+        <button type="submit" form="task-form" class="btn btn-primary">Save Task</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast-container" id="toast-container"></div>
+
+  <!-- Scripts -->
+  <script src="js/api.js"></script>
+  <script src="js/validation.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/app.js"></script>
+  <script src="js/task.js"></script>
+  <script>
+    window.addEventListener('DOMContentLoaded', () => {
+      auth.checkSession(['admin', 'employee']);
+      
+      const user = auth.getCurrentUser();
+      if (user && user.role !== 'admin') {
+        const newBtn = document.querySelector('button[onclick="openNewTaskModal()"]');
+        if (newBtn) newBtn.style.display = 'none';
+      }
+      
+      loadAdminTasks();
+    });
+  </script>
+</body>
+</html>

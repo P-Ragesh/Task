@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TaskPilot Enterprise — Reports & Analytics</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="css/dashboard.css">
+  <link rel="stylesheet" href="css/animations.css">
+  <style>
+    @media print {
+      body { background-color: white; color: black; }
+      .sidebar, .top-nav, .page-actions, .filters-bar { display: none !important; }
+      .app-container { grid-template-columns: 1fr; }
+      .content-area { padding: 0; }
+      .card { border: none; box-shadow: none; padding: 0; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="app-container" id="app-shell">
+    
+    <!-- Sidebar Container -->
+    <aside class="sidebar" id="sidebar-container"></aside>
+
+    <!-- Main Viewport -->
+    <main class="main-viewport">
+      
+      <!-- Top Navigation -->
+      <header class="top-nav" id="navbar-container"></header>
+
+      <!-- Content viewport -->
+      <div class="content-area animate-fade-in">
+        
+        <div class="page-header">
+          <div class="page-title">
+            <h1>System Report Generator</h1>
+            <p>Export all registered employee, task, and timeline audit logs.</p>
+          </div>
+        </div>
+
+        <div class="card filters-bar" style="margin-bottom: 24px;">
+          <div class="card-title-bar">
+            <h3>Generate Custom Report</h3>
+          </div>
+          <div class="grid-3col" style="margin-bottom: 16px; gap: 16px;">
+            <div class="form-group" style="margin-bottom: 0;">
+              <label>Department</label>
+              <select id="report-dept-select" class="form-control" onchange="loadFilteredReports()">
+                <option value="All">All Departments</option>
+                <option value="Engineering">Engineering</option>
+                <option value="Finance">Finance</option>
+                <option value="Design">Design</option>
+                <option value="Infrastructure">Infrastructure</option>
+                <option value="Security">Security</option>
+              </select>
+            </div>
+            <div class="form-group" style="margin-bottom: 0;">
+              <label>Priority Scoping</label>
+              <select id="report-priority-select" class="form-control" onchange="loadFilteredReports()">
+                <option value="All">All Priorities</option>
+                <option value="High">High</option>
+                <option value="Medium">Medium</option>
+                <option value="Low">Low</option>
+              </select>
+            </div>
+          </div>
+          <div style="display: flex; gap: 12px; justify-content: flex-end;">
+            <button class="btn btn-secondary" onclick="exportCSVReport()"><i class="ti ti-file-spreadsheet"></i> Export CSV</button>
+            <button class="btn btn-primary" onclick="printPDFReport()"><i class="ti ti-printer"></i> Print / Save PDF</button>
+          </div>
+        </div>
+
+        <!-- Scoped Results Table -->
+        <div class="card" style="padding: 0;">
+          <div class="card-title-bar" style="padding: 24px 24px 0; margin-bottom: 8px;">
+            <h3>Scoped Task Listing</h3>
+          </div>
+          <div class="table-responsive">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Task ID</th>
+                  <th>Task Name</th>
+                  <th>Assignee</th>
+                  <th>Status</th>
+                  <th>Priority</th>
+                  <th>Due Date</th>
+                </tr>
+              </thead>
+              <tbody id="report-table-body">
+                <!-- JS populated -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+    </main>
+  </div>
+
+  <div class="toast-container" id="toast-container"></div>
+
+  <!-- Scripts -->
+  <script src="js/api.js"></script>
+  <script src="js/validation.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/app.js"></script>
+  <script src="js/reports.js"></script>
+  <script>
+    window.addEventListener('DOMContentLoaded', () => {
+      auth.checkSession('admin');
+      loadFilteredReports();
+    });
+  </script>
+</body>
+</html>

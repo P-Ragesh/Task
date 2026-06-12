@@ -1,0 +1,56 @@
+/* ----------------------------------------------------
+   TASKPILOT ENTERPRISE — RESPONSIVE LAYOUT SYSTEM
+   ---------------------------------------------------- */
+
+@media (max-width: 1024px) {
+  .app-container {
+    grid-template-columns: 1fr;
+  }
+
+  .sidebar {
+    position: fixed;
+    left: -260px;
+    width: 260px;
+    height: 100vh;
+    box-shadow: var(--shadow-premium);
+  }
+
+  .sidebar.mobile-active {
+    left: 0;
+  }
+
+  .hamburger-btn {
+    display: block;
+  }
+
+  .kanban-view {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .grid-2col {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+}
+
+@media (max-width: 768px) {
+  .content-area {
+    padding: 20px;
+  }
+
+  .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .page-actions {
+    width: 100%;
+    justify-content: flex-end;
+  }
+
+  .global-search {
+    display: none;
+  }
+}

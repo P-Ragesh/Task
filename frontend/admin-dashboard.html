@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TaskPilot Enterprise — Admin Dashboard</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="css/dashboard.css">
+  <link rel="stylesheet" href="css/animations.css">
+</head>
+<body>
+
+  <div class="app-container" id="app-shell">
+    
+    <!-- Sidebar Container -->
+    <aside class="sidebar" id="sidebar-container"></aside>
+
+    <!-- Main Viewport -->
+    <main class="main-viewport">
+      
+      <!-- Top Navigation -->
+      <header class="top-nav" id="navbar-container"></header>
+
+      <!-- Scrollable Content -->
+      <div class="content-area animate-fade-in">
+        
+        <div class="page-header">
+          <div class="page-title">
+            <h1>Admin Performance Dashboard</h1>
+            <p>System metrics, employee tracking, and live audit log updates.</p>
+          </div>
+          <div class="page-actions">
+            <a href="reports.html" class="btn btn-secondary btn-sm"><i class="ti ti-chart-bar"></i> Analytics</a>
+            <a href="task-management.html" class="btn btn-primary btn-sm"><i class="ti ti-plus"></i> Work Assignments</a>
+          </div>
+        </div>
+
+        <!-- KPI Cards Grid -->
+        <div class="kpi-row">
+          <div class="card kpi-card blue" onclick="window.location.href='employee-management.html'">
+            <div class="kpi-icon-wrap"><i class="ti ti-users"></i></div>
+            <div class="kpi-content">
+              <div class="kpi-number" id="kpi-total-employees">0</div>
+              <div class="kpi-title">Total Employees</div>
+              <div class="kpi-trend up"><i class="ti ti-arrow-up-right"></i> Registered accounts</div>
+            </div>
+          </div>
+          <div class="card kpi-card indigo" onclick="window.location.href='task-management.html'">
+            <div class="kpi-icon-wrap"><i class="ti ti-checkbox"></i></div>
+            <div class="kpi-content">
+              <div class="kpi-number" id="kpi-total-tasks">0</div>
+              <div class="kpi-title">Total Tasks</div>
+              <div class="kpi-trend neutral">Active assignments</div>
+            </div>
+          </div>
+          <div class="card kpi-card success" onclick="window.location.href='task-management.html'">
+            <div class="kpi-icon-wrap"><i class="ti ti-circle-check"></i></div>
+            <div class="kpi-content">
+              <div class="kpi-number" id="kpi-completed-tasks">0</div>
+              <div class="kpi-title">Completed Tasks</div>
+              <div class="kpi-trend up" id="kpi-completed-rate">0% rate</div>
+            </div>
+          </div>
+          <div class="card kpi-card warning" onclick="window.location.href='task-management.html'">
+            <div class="kpi-icon-wrap"><i class="ti ti-adjustments-horizontal"></i></div>
+            <div class="kpi-content">
+              <div class="kpi-number" id="kpi-inprogress-tasks">0</div>
+              <div class="kpi-title">In Progress Tasks</div>
+              <div class="kpi-trend neutral">Ongoing works</div>
+            </div>
+          </div>
+          <div class="card kpi-card danger" onclick="window.location.href='task-management.html'">
+            <div class="kpi-icon-wrap"><i class="ti ti-clock"></i></div>
+            <div class="kpi-content">
+              <div class="kpi-number" id="kpi-pending-tasks">0</div>
+              <div class="kpi-title">Pending Tasks</div>
+              <div class="kpi-trend down">Awaiting attention</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Charts Row -->
+        <div class="grid-2col">
+          <div class="card">
+            <div class="card-title-bar">
+              <h3>Task Status Matrix</h3>
+            </div>
+            <div class="chart-container" style="height: 220px; display: flex; align-items: center; justify-content: center;" id="donut-chart-wrapper">
+              <canvas id="adminStatusDonutChart"></canvas>
+            </div>
+          </div>
+          
+          <div class="card">
+            <div class="card-title-bar">
+              <h3>Recent Task Updates</h3>
+            </div>
+            <div id="recent-updates-timeline" style="max-height: 220px; overflow-y: auto;">
+              <!-- Timeline logs -->
+            </div>
+          </div>
+        </div>
+
+        <!-- Employee Matrix Card -->
+        <div class="card">
+          <div class="card-title-bar">
+            <h3>Employee Workload & Performance Score Matrix</h3>
+          </div>
+          <div class="table-responsive">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Employee Name</th>
+                  <th>Department</th>
+                  <th>Role</th>
+                  <th>Pending</th>
+                  <th>In Progress</th>
+                  <th>Completed</th>
+                  <th>Performance Score</th>
+                </tr>
+              </thead>
+              <tbody id="admin-matrix-table-body">
+                <!-- Filled via JS -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+    </main>
+  </div>
+
+  <div class="toast-container" id="toast-container"></div>
+
+  <!-- Scripts -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/validation.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/app.js"></script>
+  <script src="js/dashboard.js"></script>
+  <script>
+    // Enforce Admin Gating
+    window.addEventListener('DOMContentLoaded', () => {
+      auth.checkSession('admin');
+      loadAdminDashboard();
+    });
+  </script>
+</body>
+</html>

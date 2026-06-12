@@ -1,0 +1,3 @@
+-- Seed Script for TaskPilot Enterprise
+-- Intentionally empty of demo records, mock employees, or sample tasks.
+-- Initial setup is handled automatically in database.js (pre-seeding the default admin).

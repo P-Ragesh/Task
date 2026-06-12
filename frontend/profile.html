@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TaskPilot Enterprise — Profile Preferences</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="css/dashboard.css">
+  <link rel="stylesheet" href="css/animations.css">
+</head>
+<body>
+
+  <div class="app-container" id="app-shell">
+    
+    <!-- Sidebar Container -->
+    <aside class="sidebar" id="sidebar-container"></aside>
+
+    <!-- Main Viewport -->
+    <main class="main-viewport">
+      
+      <!-- Top Navigation -->
+      <header class="top-nav" id="navbar-container"></header>
+
+      <!-- Content viewport -->
+      <div class="content-area animate-fade-in">
+        
+        <div class="page-header">
+          <div class="page-title">
+            <h1>Account Preferences</h1>
+            <p>Update your access password or contact credentials.</p>
+          </div>
+        </div>
+
+        <div class="grid-2col">
+          
+          <!-- Edit profile settings -->
+          <div class="card">
+            <div class="card-title-bar">
+              <h3>Edit Profile Settings</h3>
+            </div>
+            
+            <!-- ADMIN FORM -->
+            <form id="admin-profile-form" style="display: none;" onsubmit="handleAdminProfileSubmit(event)">
+              <div class="form-group">
+                <label>Admin Username</label>
+                <input type="text" id="admin-username-input" class="form-control" required autocomplete="username">
+              </div>
+              <div class="form-group">
+                <label>New Access Password</label>
+                <input type="password" id="admin-password-input" class="form-control" placeholder="Leave blank to keep current password" autocomplete="new-password">
+              </div>
+              <button type="submit" class="btn btn-primary btn-sm">Save Preferences</button>
+            </form>
+
+            <!-- EMPLOYEE FORM -->
+            <form id="employee-profile-form" style="display: none;" onsubmit="handleEmployeeProfileSubmit(event)">
+              <div class="form-group">
+                <label>Email Address</label>
+                <input type="email" id="emp-email-input" class="form-control" required autocomplete="email">
+              </div>
+              <div class="form-group">
+                <label>Phone Number</label>
+                <input type="text" id="emp-phone-input" class="form-control" required autocomplete="tel">
+              </div>
+              <div class="form-group">
+                <label>New Access Password</label>
+                <input type="password" id="emp-password-input" class="form-control" placeholder="Leave blank to keep current password" autocomplete="new-password">
+              </div>
+              <button type="submit" class="btn btn-primary btn-sm">Save Preferences</button>
+            </form>
+
+          </div>
+
+        </div>
+
+      </div>
+    </main>
+  </div>
+
+  <div class="toast-container" id="toast-container"></div>
+
+  <!-- Scripts -->
+  <script src="js/api.js"></script>
+  <script src="js/validation.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/app.js"></script>
+  <script>
+    window.addEventListener('DOMContentLoaded', () => {
+      auth.checkSession();
+      populateProfileForm();
+    });
+
+    async function populateProfileForm() {
+      const user = auth.getCurrentUser();
+      if (!user) return;
+
+      if (user.role === 'admin') {
+        document.getElementById('admin-profile-form').style.display = 'block';
+        document.getElementById('admin-username-input').value = user.username;
+      } else {
+        document.getElementById('employee-profile-form').style.display = 'block';
+        try {
+          // Fetch detailed employee record via API
+          const res = await apiClient.get('/tasks'); // Trigger JWT validation checks
+          // Since employee can't fetch their profile details from a dedicated route directly yet,
+          // we populate email and mock details, or fetch them:
+          document.getElementById('emp-email-input').value = user.email;
+          document.getElementById('emp-phone-input').value = 'loading...';
+          
+          // Let's call update profile query to get details or use localStorage cached details
+          // To be safe, we can pre-populate from local storage user profile
+          const cachedUser = auth.getCurrentUser();
+          document.getElementById('emp-email-input').value = cachedUser.email || '';
+          document.getElementById('emp-phone-input').value = cachedUser.phone || '';
+        } catch (err) {
+          console.error(err);
+        }
+      }
+    }
+
+    async function handleAdminProfileSubmit(e) {
+      e.preventDefault();
+      const username = document.getElementById('admin-username-input').value.trim();
+      const password = document.getElementById('admin-password-input').value;
+
+      if (!validation.isNotEmpty(username)) {
+        showToast('Username is required.', 'danger');
+        return;
+      }
+
+      try {
+        const res = await apiClient.put('/auth/profile', { username, password });
+        if (res.success) {
+          showToast(res.message, 'success');
+          // Update cached user session
+          const user = auth.getCurrentUser();
+          user.username = username;
+          localStorage.setItem('tp_user', JSON.stringify(user));
+          
+          document.getElementById('admin-password-input').value = '';
+          await initializeShellComponents();
+        }
+      } catch (err) {
+        showToast(err.message, 'danger');
+      }
+    }
+
+    async function handleEmployeeProfileSubmit(e) {
+      e.preventDefault();
+      const email = document.getElementById('emp-email-input').value.trim();
+      const phone = document.getElementById('emp-phone-input').value.trim();
+      const password = document.getElementById('emp-password-input').value;
+
+      if (!validation.isNotEmpty(email) || !validation.isNotEmpty(phone)) {
+        showToast('Email and phone are required.', 'danger');
+        return;
+      }
+
+      const isValidEmail = await validation.isValidEmail(email);
+      if (!isValidEmail) {
+        showToast('Please enter a valid active email address.', 'danger');
+        return;
+      }
+
+      try {
+        const res = await apiClient.put('/auth/profile', { email, phone, password });
+        if (res.success) {
+          showToast(res.message, 'success');
+          // Update cached user session
+          const user = auth.getCurrentUser();
+          user.email = email;
+          user.phone = phone;
+          localStorage.setItem('tp_user', JSON.stringify(user));
+
+          document.getElementById('emp-password-input').value = '';
+          await initializeShellComponents();
+        }
+      } catch (err) {
+        showToast(err.message, 'danger');
+      }
+    }
+  </script>
+</body>
+</html>

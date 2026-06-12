@@ -1,0 +1,2205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TaskPilot Enterprise</title>
+  <!-- Tabler Icons CSS -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+  <!-- Custom Stylesheet -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <div class="app-container logged-out" id="app-shell">
+    
+    <!-- LEFT SIDEBAR -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-logo">
+        <div class="logo-icon">
+          <i class="ti ti-activity-heartbeat"></i>
+        </div>
+        <div class="logo-text">
+          TaskPilot
+          <span>Console</span>
+        </div>
+      </div>
+
+      <nav class="sidebar-menu" id="sidebar-menu-items">
+        <!-- Rendered dynamically by JavaScript based on Role -->
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="user-profile" id="user-profile-widget">
+          <div class="user-avatar" id="nav-avatar">U</div>
+          <div class="user-details">
+            <div class="user-name" id="nav-username">Loading...</div>
+            <div class="user-role" id="nav-userrole">Role</div>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- MAIN VIEWPORT -->
+    <main class="main-viewport">
+      
+      <!-- TOP NAVBAR -->
+      <header class="top-nav">
+        <div class="nav-left">
+          <button class="hamburger-btn" id="menu-toggle" onclick="toggleMobileSidebar()">
+            <i class="ti ti-menu-2"></i>
+          </button>
+          <div class="global-search" style="position: relative;">
+            <i class="ti ti-search"></i>
+            <input type="text" id="global-search-input" placeholder="Search tasks..." oninput="handleGlobalSearch(this.value)" autocomplete="off">
+            <div id="search-results-dropdown" class="search-results-dropdown" style="display: none;"></div>
+          </div>
+        </div>
+        
+        <div class="nav-right">
+          <!-- Theme Switcher -->
+          <button class="nav-action-btn theme-toggle" onclick="toggleTheme()" title="Toggle Light/Dark Theme">
+            <i class="ti ti-sun" id="theme-icon"></i>
+          </button>
+          
+          <button class="nav-action-btn" onclick="handleLogout()" title="Log Out">
+            <i class="ti ti-logout"></i>
+          </button>
+        </div>
+      </header>
+
+      <!-- SCROLLABLE CONTENT AREA -->
+      <div class="content-area" id="content-viewport">
+
+        <!-- ==================== ADMIN VIEWS ==================== -->
+
+        <!-- 1. ADMIN DASHBOARD -->
+        <section class="page-view" id="view-admin-dashboard">
+          <div class="page-header">
+            <div class="page-title">
+              <h1>Admin Performance Dashboard</h1>
+              <p>System metrics, employee tracking, and live audit log updates.</p>
+            </div>
+            <div class="page-actions">
+              <button class="btn btn-secondary btn-sm" onclick="switchView('admin-reports')"><i class="ti ti-chart-bar"></i> Analytics</button>
+              <button class="btn btn-primary btn-sm" onclick="openNewTaskModal()"><i class="ti ti-plus"></i> New Assignment</button>
+            </div>
+          </div>
+
+          <!-- KPI Cards Grid -->
+          <div class="kpi-row">
+            <div class="card kpi-card blue" onclick="switchView('admin-employees')">
+              <div class="kpi-icon-wrap"><i class="ti ti-users"></i></div>
+              <div class="kpi-content">
+                <div class="kpi-number" id="kpi-total-employees">0</div>
+                <div class="kpi-title">Total Employees</div>
+                <div class="kpi-trend up"><i class="ti ti-arrow-up-right"></i> Registered accounts</div>
+              </div>
+            </div>
+            <div class="card kpi-card indigo" onclick="switchView('admin-tasks')">
+              <div class="kpi-icon-wrap"><i class="ti ti-checkbox"></i></div>
+              <div class="kpi-content">
+                <div class="kpi-number" id="kpi-total-tasks">0</div>
+                <div class="kpi-title">Total Tasks</div>
+                <div class="kpi-trend neutral" id="kpi-total-tasks-desc">Active assignments</div>
+              </div>
+            </div>
+            <div class="card kpi-card success" onclick="switchView('admin-tasks')">
+              <div class="kpi-icon-wrap"><i class="ti ti-circle-check"></i></div>
+              <div class="kpi-content">
+                <div class="kpi-number" id="kpi-completed-tasks">0</div>
+                <div class="kpi-title">Completed Tasks</div>
+                <div class="kpi-trend up" id="kpi-completed-rate">0% rate</div>
+              </div>
+            </div>
+            <div class="card kpi-card warning" onclick="switchView('admin-tasks')">
+              <div class="kpi-icon-wrap"><i class="ti ti-adjustments-horizontal"></i></div>
+              <div class="kpi-content">
+                <div class="kpi-number" id="kpi-inprogress-tasks">0</div>
+                <div class="kpi-title">In Progress Tasks</div>
+                <div class="kpi-trend neutral">Ongoing works</div>
+              </div>
+            </div>
+            <div class="card kpi-card danger" onclick="switchView('admin-tasks')">
+              <div class="kpi-icon-wrap"><i class="ti ti-clock"></i></div>
+              <div class="kpi-content">
+                <div class="kpi-number" id="kpi-pending-tasks">0</div>
+                <div class="kpi-title">Pending Tasks</div>
+                <div class="kpi-trend down">Awaiting attention</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Charts Row -->
+          <div class="grid-2col" id="admin-charts-container">
+            <div class="card">
+              <div class="card-title-bar">
+                <h3>Task Status Matrix</h3>
+              </div>
+              <div class="chart-container" style="height: 220px; display: flex; align-items: center; justify-content: center;" id="donut-chart-wrapper">
+                <canvas id="adminStatusDonutChart"></canvas>
+              </div>
+            </div>
+            
+            <div class="card">
+              <div class="card-title-bar">
+                <h3>Recent Task Updates</h3>
+              </div>
+              <div id="recent-updates-timeline" style="max-height: 220px; overflow-y: auto;">
+                <!-- Dynamically rendered timeline -->
+              </div>
+            </div>
+          </div>
+
+          <!-- Employee-wise Status Table -->
+          <div class="card">
+            <div class="card-title-bar">
+              <h3>Employee Workload & Performance Score Matrix</h3>
+            </div>
+            <div class="table-responsive" id="matrix-table-wrapper">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Employee Name</th>
+                    <th>Department</th>
+                    <th>Role</th>
+                    <th>Pending</th>
+                    <th>In Progress</th>
+                    <th>Completed</th>
+                    <th>Performance Score</th>
+                  </tr>
+                </thead>
+                <tbody id="admin-matrix-table-body">
+                  <!-- Filled via JS -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- 2. ADMIN TASKS VIEW -->
+        <section class="page-view" id="view-admin-tasks">
+          <div class="page-header">
+            <div class="page-title">
+              <h1>Task Management Console</h1>
+              <p>Configure tasks, track assignments, and edit statuses.</p>
+            </div>
+            <div class="page-actions">
+              <div class="tab-pills">
+                <button class="tab-pill active" onclick="switchTaskLayout('kanban')" id="pill-layout-kanban"><i class="ti ti-columns"></i> Kanban</button>
+                <button class="tab-pill" onclick="switchTaskLayout('list')" id="pill-layout-list"><i class="ti ti-list"></i> List View</button>
+              </div>
+              <button class="btn btn-primary btn-sm" onclick="openNewTaskModal()"><i class="ti ti-plus"></i> New Task</button>
+            </div>
+          </div>
+
+          <!-- Filters Row -->
+          <div class="card filters-bar" style="padding: 14px 20px; margin-bottom: 20px;">
+            <div class="filters-left">
+              <div class="search-input-wrapper">
+                <i class="ti ti-search"></i>
+                <input type="text" id="admin-task-search" placeholder="Search tasks..." class="form-control-sm" oninput="renderAdminTasks()">
+              </div>
+              <select id="admin-task-priority-filter" class="form-control-sm" onchange="renderAdminTasks()">
+                <option value="All">All Priorities</option>
+                <option value="High">High</option>
+                <option value="Medium">Medium</option>
+                <option value="Low">Low</option>
+              </select>
+              <select id="admin-task-assignee-filter" class="form-control-sm" onchange="renderAdminTasks()">
+                <!-- Populated via JS -->
+              </select>
+            </div>
+          </div>
+
+          <!-- KANBAN BOARD -->
+          <div class="kanban-view" id="admin-task-layout-kanban">
+            <div class="kanban-column" id="admin-col-todo">
+              <div class="kanban-header">
+                <div class="column-title-wrap">
+                  <span class="column-dot"></span>
+                  <span class="column-title">Pending (To Do)</span>
+                </div>
+                <span class="column-count" id="admin-count-todo">0</span>
+              </div>
+              <div class="kanban-cards" ondragover="allowDrop(event)" ondrop="handleDrop(event, 'todo')" ondragenter="dragEnter(event)" ondragleave="dragLeave(event)">
+                <!-- Cards render here -->
+              </div>
+            </div>
+
+            <div class="kanban-column" id="admin-col-inprogress">
+              <div class="kanban-header">
+                <div class="column-title-wrap">
+                  <span class="column-dot"></span>
+                  <span class="column-title">In Progress</span>
+                </div>
+                <span class="column-count" id="admin-count-inprogress">0</span>
+              </div>
+              <div class="kanban-cards" ondragover="allowDrop(event)" ondrop="handleDrop(event, 'inprogress')" ondragenter="dragEnter(event)" ondragleave="dragLeave(event)">
+                <!-- Cards render here -->
+              </div>
+            </div>
+
+            <div class="kanban-column" id="admin-col-completed">
+              <div class="kanban-header">
+                <div class="column-title-wrap">
+                  <span class="column-dot"></span>
+                  <span class="column-title">Completed</span>
+                </div>
+                <span class="column-count" id="admin-count-completed">0</span>
+              </div>
+              <div class="kanban-cards" ondragover="allowDrop(event)" ondrop="handleDrop(event, 'completed')" ondragenter="dragEnter(event)" ondragleave="dragLeave(event)">
+                <!-- Cards render here -->
+              </div>
+            </div>
+          </div>
+
+          <!-- LIST VIEW -->
+          <div class="card" id="admin-task-layout-list" style="display: none; padding: 0;">
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Task Name</th>
+                    <th>Priority</th>
+                    <th>Status</th>
+                    <th>Assignee</th>
+                    <th>Due Date</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="admin-task-list-tbody">
+                  <!-- Filled via JS -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- 3. ADMIN EMPLOYEES DIRECTORY -->
+        <section class="page-view" id="view-admin-employees">
+          <div class="page-header">
+            <div class="page-title">
+              <h1>Employee Directory</h1>
+              <p>Add employees, edit roles, and reset access passwords.</p>
+            </div>
+            <div class="page-actions">
+              <button class="btn btn-primary btn-sm" onclick="openNewEmployeeModal()"><i class="ti ti-user-plus"></i> Add Employee Account</button>
+            </div>
+          </div>
+
+          <!-- Directory Grid -->
+          <div class="employee-grid" id="admin-employees-grid">
+            <!-- Rendered via JS -->
+          </div>
+        </section>
+
+        <!-- 4. ADMIN TEAMS VIEW -->
+        <section class="page-view" id="view-admin-teams">
+          <div class="page-header">
+            <div class="page-title">
+              <h1>Department Metrics</h1>
+              <p>Workloads and completed counts sorted by department division.</p>
+            </div>
+          </div>
+          <div class="grid-equal-2col" id="admin-teams-grid">
+            <!-- Rendered via JS -->
+          </div>
+        </section>
+
+        <!-- 5. ADMIN REPORTS & ANALYTICS -->
+        <section class="page-view" id="view-admin-reports">
+          <div class="page-header">
+            <div class="page-title">
+              <h1>System Report Generator</h1>
+              <p>Export all registered employee, task, and timeline audit logs.</p>
+            </div>
+          </div>
+
+          <div class="card" style="margin-bottom: 24px;">
+            <div class="card-title-bar">
+              <h3>Generate Custom Report</h3>
+            </div>
+            <div class="grid-3col" style="margin-bottom: 16px; gap: 16px;">
+              <div class="form-group" style="margin-bottom: 0;">
+                <label>Department</label>
+                <select id="report-dept-select" class="form-control" onchange="generateAdminReport()">
+                  <option value="All">All Departments</option>
+                  <option value="Engineering">Engineering</option>
+                  <option value="Finance">Finance</option>
+                  <option value="Design">Design</option>
+                  <option value="Infrastructure">Infrastructure</option>
+                  <option value="Security">Security</option>
+                </select>
+              </div>
+              <div class="form-group" style="margin-bottom: 0;">
+                <label>Priority Scoping</label>
+                <select id="report-priority-select" class="form-control" onchange="generateAdminReport()">
+                  <option value="All">All Priorities</option>
+                  <option value="High">High</option>
+                  <option value="Medium">Medium</option>
+                  <option value="Low">Low</option>
+                </select>
+              </div>
+            </div>
+            <div style="display: flex; gap: 12px; justify-content: flex-end;">
+              <button class="btn btn-secondary" onclick="exportAdminDataToCSV()"><i class="ti ti-file-spreadsheet"></i> Export CSV</button>
+              <button class="btn btn-primary" onclick="window.print()"><i class="ti ti-printer"></i> Print / Save PDF</button>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-title-bar">
+              <h3>Scoped Task Listing</h3>
+            </div>
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Task ID</th>
+                    <th>Task Name</th>
+                    <th>Assignee</th>
+                    <th>Status</th>
+                    <th>Priority</th>
+                    <th>Due Date</th>
+                  </tr>
+                </thead>
+                <tbody id="report-table-body">
+                  <!-- Filled via JS -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- 6. ADMIN SETTINGS -->
+        <section class="page-view" id="view-admin-settings">
+          <div class="page-header">
+            <div class="page-title">
+              <h1>Admin System Preferences</h1>
+              <p>Reset admin username credentials or change defaults.</p>
+            </div>
+          </div>
+
+          <div class="grid-2col">
+            <div class="card">
+              <div class="card-title-bar">
+                <h3>Change Admin Details</h3>
+              </div>
+              <form id="admin-settings-form" onsubmit="handleAdminSettingsSave(event)">
+                <div class="form-group">
+                  <label>Admin Username</label>
+                  <input type="text" id="admin-username-input" class="form-control" required>
+                </div>
+                <div class="form-group">
+                  <label>New Password</label>
+                  <input type="password" id="admin-password-input" class="form-control" placeholder="Enter new password to reset">
+                </div>
+                <button type="submit" class="btn btn-primary btn-sm">Save Preferences</button>
+              </form>
+            </div>
+          </div>
+        </section>
+
+
+        <!-- ==================== EMPLOYEE VIEWS ==================== -->
+
+        <!-- 7. EMPLOYEE DASHBOARD & TASKS -->
+        <section class="page-view" id="view-employee-dashboard">
+          <div class="page-header">
+            <div class="page-title">
+              <h1>My Tasks Console</h1>
+              <p>Check deadlines, review workloads, and update assignment status.</p>
+            </div>
+          </div>
+
+          <!-- Employee Dashboard KPIs -->
+          <div class="kpi-row">
+            <div class="card kpi-card blue">
+              <div class="kpi-icon-wrap"><i class="ti ti-checkbox"></i></div>
+              <div class="kpi-content">
+                <div class="kpi-number" id="emp-kpi-assigned">0</div>
+                <div class="kpi-title">Assigned Tasks</div>
+              </div>
+            </div>
+            <div class="card kpi-card success">
+              <div class="kpi-icon-wrap"><i class="ti ti-circle-check"></i></div>
+              <div class="kpi-content">
+                <div class="kpi-number" id="emp-kpi-completed">0</div>
+                <div class="kpi-title">Completed Tasks</div>
+              </div>
+            </div>
+            <div class="card kpi-card warning">
+              <div class="kpi-icon-wrap"><i class="ti ti-adjustments-horizontal"></i></div>
+              <div class="kpi-content">
+                <div class="kpi-number" id="emp-kpi-inprogress">0</div>
+                <div class="kpi-title">In Progress Tasks</div>
+              </div>
+            </div>
+            <div class="card kpi-card danger">
+              <div class="kpi-icon-wrap"><i class="ti ti-clock"></i></div>
+              <div class="kpi-content">
+                <div class="kpi-number" id="emp-kpi-pending">0</div>
+                <div class="kpi-title">Pending Tasks</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Employee Task Table -->
+          <div class="card">
+            <div class="card-title-bar">
+              <h3>My Work Allocations</h3>
+            </div>
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Task Name</th>
+                    <th>Priority</th>
+                    <th>Status</th>
+                    <th>Due Date</th>
+                    <th>Completion Note</th>
+                    <th>Action Controls</th>
+                  </tr>
+                </thead>
+                <tbody id="employee-task-table-body">
+                  <!-- Filled via JS -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- 8. EMPLOYEE PERFORMANCE VIEW -->
+        <section class="page-view" id="view-employee-performance">
+          <div class="page-header">
+            <div class="page-title">
+              <h1>My Performance Analytics</h1>
+              <p>History log, workload, and performance evaluations.</p>
+            </div>
+          </div>
+
+          <div class="grid-2col">
+            <div class="card">
+              <div class="card-title-bar">
+                <h3>My Productivity Matrix</h3>
+              </div>
+              <div style="font-size: 13px; margin-bottom: 20px;">
+                Your current performance score is calculated by task completions and deadlines met.
+              </div>
+              <div class="kpi-content" style="text-align: center; padding: 20px 0;">
+                <div class="kpi-number" id="emp-perf-score" style="font-size: 64px; color: var(--color-primary);">0</div>
+                <div class="kpi-title">Performance Index Score</div>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-title-bar">
+                <h3>My Status Transition Log</h3>
+              </div>
+              <div id="employee-recent-logs" style="max-height: 250px; overflow-y: auto;">
+                <!-- Logs rendered via JS -->
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 9. EMPLOYEE SETTINGS -->
+        <section class="page-view" id="view-employee-settings">
+          <div class="page-header">
+            <div class="page-title">
+              <h1>My Account Settings</h1>
+              <p>Update your email, phone, or password access credentials.</p>
+            </div>
+          </div>
+
+          <div class="grid-2col">
+            <div class="card">
+              <div class="card-title-bar">
+                <h3>Edit Profile Credentials</h3>
+              </div>
+              <form id="employee-settings-form" onsubmit="handleEmployeeSettingsSave(event)">
+                <div class="form-group">
+                  <label>Email Address</label>
+                  <input type="email" id="emp-settings-email" class="form-control" required>
+                </div>
+                <div class="form-group">
+                  <label>Phone Number</label>
+                  <input type="text" id="emp-settings-phone" class="form-control" required>
+                </div>
+                <div class="form-group">
+                  <label>New Access Password</label>
+                  <input type="password" id="emp-settings-password" class="form-control" placeholder="Leave blank to keep current password">
+                </div>
+                <button type="submit" class="btn btn-primary btn-sm">Update Profile</button>
+              </form>
+            </div>
+          </div>
+        </section>
+
+      </div>
+    </main>
+  </div>
+
+  <!-- ==================== AUTH PORTAL SCREEN ==================== -->
+  <div class="login-screen" id="login-portal">
+    <div class="login-card">
+      <div class="login-header">
+        <div class="logo-icon" style="margin: 0 auto 12px;">
+          <i class="ti ti-activity-heartbeat" style="color: white;"></i>
+        </div>
+        <h2 style="font-size: 20px; font-weight: 700; color: var(--color-text-main);">TaskPilot Enterprise</h2>
+        <p style="font-size: 12px; color: var(--color-text-muted); margin-top: 4px;">Employee Task Monitoring & Metrics</p>
+      </div>
+
+      <div class="login-tabs">
+        <button class="login-tab-btn active" id="btn-portal-admin" onclick="switchLoginPortal('admin')">Admin Portal</button>
+        <button class="login-tab-btn" id="btn-portal-employee" onclick="switchLoginPortal('employee')">Employee Portal</button>
+      </div>
+
+      <div class="login-body">
+        <form id="login-form" onsubmit="handleLoginSubmit(event)">
+          <div class="form-group">
+            <label id="login-user-label">Username</label>
+            <input type="text" id="login-username" class="form-control" placeholder="Enter username" required autocomplete="username">
+          </div>
+          <div class="form-group">
+            <label>Password</label>
+            <input type="password" id="login-password" class="form-control" placeholder="••••••••" required autocomplete="current-password">
+          </div>
+          <button type="submit" class="btn btn-primary" style="width: 100%; justify-content: center; margin-top: 10px;">
+            Log In Console
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== MODALS ==================== -->
+
+  <!-- MODAL: ADMIN ASSIGN/EDIT TASK -->
+  <div class="modal-backdrop" id="task-modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="task-modal-title">Assign Task</h3>
+        <button class="close-modal-btn" onclick="closeTaskModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="task-form" onsubmit="handleTaskFormSubmit(event)">
+          <input type="hidden" id="task-form-id">
+          <div class="form-group">
+            <label>Task Title</label>
+            <input type="text" id="task-form-title" class="form-control" placeholder="e.g. Code database connection queries" required>
+          </div>
+          <div class="form-group">
+            <label>Description</label>
+            <textarea id="task-form-desc" class="form-control" style="height: 80px;" placeholder="Brief details about the task workload..." required></textarea>
+          </div>
+          <div class="grid-equal-2col" style="gap: 12px; margin-bottom: 0;">
+            <div class="form-group">
+              <label>Assign Employee</label>
+              <select id="task-form-assignee" class="form-control" required>
+                <!-- Filled via JS -->
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Priority</label>
+              <select id="task-form-priority" class="form-control" required>
+                <option value="Low">Low</option>
+                <option value="Medium" selected>Medium</option>
+                <option value="High">High</option>
+              </select>
+            </div>
+          </div>
+          <div class="grid-equal-2col" style="gap: 12px; margin-bottom: 0;">
+            <div class="form-group">
+              <label>Due Date</label>
+              <input type="date" id="task-form-duedate" class="form-control" required>
+            </div>
+            <div class="form-group">
+              <label>Status</label>
+              <select id="task-form-status" class="form-control" required>
+                <option value="todo">Pending (To Do)</option>
+                <option value="inprogress">In Progress</option>
+                <option value="completed">Completed</option>
+              </select>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeTaskModal()">Cancel</button>
+        <button type="submit" form="task-form" class="btn btn-primary">Save Task</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: ADMIN CREATE EMPLOYEE -->
+  <div class="modal-backdrop" id="employee-modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Create Employee Account</h3>
+        <button class="close-modal-btn" onclick="closeEmployeeModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="employee-form" onsubmit="handleEmployeeFormSubmit(event)">
+          <div class="form-group">
+            <label>Full Name</label>
+            <input type="text" id="emp-form-name" class="form-control" placeholder="e.g. Meena Joseph" required>
+          </div>
+          <div class="form-group">
+            <label>Department</label>
+            <select id="emp-form-dept" class="form-control" required>
+              <option value="Engineering">Engineering</option>
+              <option value="Finance">Finance</option>
+              <option value="Design">Design</option>
+              <option value="Infrastructure">Infrastructure</option>
+              <option value="Security">Security</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Job Title / Role</label>
+            <input type="text" id="emp-form-role" class="form-control" placeholder="e.g. Lead Designer" required>
+          </div>
+          <div class="grid-equal-2col" style="gap: 12px; margin-bottom: 0;">
+            <div class="form-group">
+              <label>Email Address</label>
+              <input type="email" id="emp-form-email" class="form-control" placeholder="email@company.com" required>
+              <div id="emp-form-email-error" style="color: var(--color-danger); font-size: 11px; margin-top: 4px; display: none;"></div>
+            </div>
+            <div class="form-group">
+              <label>Phone Number</label>
+              <input type="text" id="emp-form-phone" class="form-control" placeholder="+1 (555) 0123" required>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Default Access Password</label>
+            <input type="password" id="emp-form-password" class="form-control" placeholder="Enter password (default is 123456)" value="123456" required>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeEmployeeModal()">Cancel</button>
+        <button type="submit" form="employee-form" class="btn btn-primary">Create Account</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: EMPLOYEE UPDATE STATUS -->
+  <div class="modal-backdrop" id="status-update-modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Update Task Progress</h3>
+        <button class="close-modal-btn" onclick="closeStatusUpdateModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="status-update-form" onsubmit="handleStatusUpdateFormSubmit(event)">
+          <input type="hidden" id="status-task-id">
+          <div class="form-group">
+            <label>Allocated Task</label>
+            <input type="text" id="status-task-title" class="form-control" disabled>
+          </div>
+          <div class="form-group">
+            <label>Target Status</label>
+            <select id="status-task-select" class="form-control" required onchange="toggleCompletionNoteRequired(this.value)">
+              <option value="todo">Pending (To Do)</option>
+              <option value="inprogress">In Progress</option>
+              <option value="completed">Completed</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label id="completion-note-label">Work Progress / Completion Note</label>
+            <textarea id="status-task-note" class="form-control" style="height: 100px;" placeholder="Describe details, steps, or issues encountered..."></textarea>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeStatusUpdateModal()">Cancel</button>
+        <button type="submit" form="status-update-form" class="btn btn-primary">Save Status Update</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: ADMIN PASSWORD RESET -->
+  <div class="modal-backdrop" id="reset-password-modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Reset Employee Password</h3>
+        <button class="close-modal-btn" onclick="closeResetPasswordModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="reset-password-form" onsubmit="handleResetPasswordSubmit(event)">
+          <input type="hidden" id="reset-emp-id">
+          <div class="form-group">
+            <label>Employee Profile</label>
+            <input type="text" id="reset-emp-name" class="form-control" disabled>
+          </div>
+          <div class="form-group">
+            <label>New Access Password</label>
+            <input type="password" id="reset-emp-password" class="form-control" placeholder="Enter new password" required minlength="4">
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeResetPasswordModal()">Cancel</button>
+        <button type="submit" form="reset-password-form" class="btn btn-primary">Reset Password</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST ALERTS -->
+  <div class="toast-container" id="toast-container"></div>
+
+  <!-- CHART JS -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+
+  <!-- DATABASE ENGINE & APPLICATION CONTROLLER -->
+  <script>
+    // ----------------------------------------------------
+    // 1. RELATIONAL DATABASE STORAGE
+    // ----------------------------------------------------
+    function initDatabase() {
+      // Clear legacy database formats from previous mock versions if they exist
+      if (localStorage.getItem('employees') && !localStorage.getItem('tp_employees')) {
+        localStorage.clear();
+      }
+
+      if (!localStorage.getItem('tp_admins')) {
+        localStorage.setItem('tp_admins', JSON.stringify([
+          { id: 1, username: "admin", password: "admin123" }
+        ]));
+      }
+      if (!localStorage.getItem('tp_employees')) {
+        localStorage.setItem('tp_employees', JSON.stringify([]));
+      }
+      if (!localStorage.getItem('tp_tasks')) {
+        localStorage.setItem('tp_tasks', JSON.stringify([]));
+      }
+      if (!localStorage.getItem('tp_history')) {
+        localStorage.setItem('tp_history', JSON.stringify([]));
+      }
+    }
+
+    // Database Helper Functions
+    function getAdmins() { return JSON.parse(localStorage.getItem('tp_admins') || '[]'); }
+    function saveAdmins(arr) { localStorage.setItem('tp_admins', JSON.stringify(arr)); }
+    function getEmployees() { return JSON.parse(localStorage.getItem('tp_employees') || '[]'); }
+    function saveEmployees(arr) { localStorage.setItem('tp_employees', JSON.stringify(arr)); }
+    function getTasks() { return JSON.parse(localStorage.getItem('tp_tasks') || '[]'); }
+    function saveTasks(arr) { localStorage.setItem('tp_tasks', JSON.stringify(arr)); }
+    function getHistory() { return JSON.parse(localStorage.getItem('tp_history') || '[]'); }
+    function saveHistory(arr) { localStorage.setItem('tp_history', JSON.stringify(arr)); }
+
+    // Log History Event
+    function logStatusTransition(taskId, fromStatus, toStatus, note, actorName) {
+      const history = getHistory();
+      const newLog = {
+        id: Date.now() + Math.floor(Math.random() * 1000),
+        taskId: taskId,
+        fromStatus: fromStatus,
+        toStatus: toStatus,
+        note: note || '',
+        actor: actorName,
+        timestamp: new Date().toLocaleString()
+      };
+      history.unshift(newLog); // Prepend to show most recent first
+      saveHistory(history);
+    }
+
+    // ----------------------------------------------------
+    // 2. STATE MANAGER & SESSION ROUTER
+    // ----------------------------------------------------
+    let appState = {
+      currentUser: null,  // { id, username/email, role: 'admin'/'employee', name }
+      loginPortal: 'admin',
+      activeView: 'admin-dashboard',
+      taskLayout: 'kanban',
+      theme: 'system'
+    };
+
+    let dashboardDonutChart = null;
+
+    // View Routing Access Permissions
+    const ROLE_VIEWS = {
+      admin: [
+        'admin-dashboard',
+        'admin-tasks',
+        'admin-employees',
+        'admin-teams',
+        'admin-reports',
+        'admin-settings'
+      ],
+      employee: [
+        'employee-dashboard',
+        'employee-performance',
+        'employee-settings'
+      ]
+    };
+
+    function checkSession() {
+      const savedSession = sessionStorage.getItem('tp_session');
+      if (savedSession) {
+        appState.currentUser = JSON.parse(savedSession);
+        
+        // Hide Login Portal
+        document.getElementById('login-portal').style.display = 'none';
+        document.getElementById('app-shell').classList.remove('logged-out');
+        
+        // Populate Sidebar
+        renderSidebar();
+        
+        // Route to default view
+        const defaultView = appState.currentUser.role === 'admin' ? 'admin-dashboard' : 'employee-dashboard';
+        switchView(defaultView);
+      } else {
+        // Show Login Portal
+        document.getElementById('login-portal').style.display = 'flex';
+        document.getElementById('app-shell').classList.add('logged-out');
+      }
+    }
+
+    // Switch active view
+    function switchView(viewId) {
+      if (!appState.currentUser) return;
+
+      // Access Authorization Check
+      const role = appState.currentUser.role;
+      const allowedViews = ROLE_VIEWS[role] || [];
+      
+      if (!allowedViews.includes(viewId)) {
+        // Redirect to their default dashboard
+        viewId = role === 'admin' ? 'admin-dashboard' : 'employee-dashboard';
+      }
+
+      appState.activeView = viewId;
+
+      // Update DOM visibility
+      document.querySelectorAll('.page-view').forEach(view => {
+        view.classList.remove('active');
+      });
+      document.getElementById(`view-${viewId}`).classList.add('active');
+
+      // Update Sidebar link active styles
+      document.querySelectorAll('.sidebar-link').forEach(link => {
+        link.classList.remove('active');
+        const clickAttr = link.getAttribute('onclick');
+        if (clickAttr && clickAttr.includes(`'${viewId}'`)) {
+          link.classList.add('active');
+        }
+      });
+
+      // Mobile Collapse
+      document.getElementById('sidebar').classList.remove('mobile-active');
+
+      // Initialize Page Specific Data
+      if (viewId === 'admin-dashboard') {
+        renderAdminDashboard();
+      } else if (viewId === 'admin-tasks') {
+        renderAdminTasks();
+      } else if (viewId === 'admin-employees') {
+        renderAdminEmployeesDirectory();
+      } else if (viewId === 'admin-teams') {
+        renderAdminTeams();
+      } else if (viewId === 'admin-reports') {
+        generateAdminReport();
+      } else if (viewId === 'admin-settings') {
+        populateAdminSettings();
+      } else if (viewId === 'employee-dashboard') {
+        renderEmployeeDashboard();
+      } else if (viewId === 'employee-performance') {
+        renderEmployeePerformance();
+      } else if (viewId === 'employee-settings') {
+        populateEmployeeSettings();
+      }
+    }
+
+    function renderSidebar() {
+      const menu = document.getElementById('sidebar-menu-items');
+      const role = appState.currentUser.role;
+      
+      menu.innerHTML = '';
+      
+      if (role === 'admin') {
+        menu.innerHTML = `
+          <div class="menu-label">Console</div>
+          <a class="sidebar-link active" onclick="switchView('admin-dashboard')">
+            <i class="ti ti-smart-home"></i>
+            <span>Dashboard</span>
+          </a>
+          <a class="sidebar-link" onclick="switchView('admin-tasks')">
+            <i class="ti ti-checkbox"></i>
+            <span>Tasks</span>
+          </a>
+          <a class="sidebar-link" onclick="switchView('admin-employees')">
+            <i class="ti ti-users"></i>
+            <span>Employees</span>
+          </a>
+          <a class="sidebar-link" onclick="switchView('admin-teams')">
+            <i class="ti ti-hierarchy-2"></i>
+            <span>Departments</span>
+          </a>
+          <div class="menu-label">Exports</div>
+          <a class="sidebar-link" onclick="switchView('admin-reports')">
+            <i class="ti ti-chart-bar"></i>
+            <span>Reports</span>
+          </a>
+          <div class="menu-label">System</div>
+          <a class="sidebar-link" onclick="switchView('admin-settings')">
+            <i class="ti ti-settings"></i>
+            <span>Settings</span>
+          </a>
+        `;
+      } else {
+        menu.innerHTML = `
+          <div class="menu-label">My Space</div>
+          <a class="sidebar-link active" onclick="switchView('employee-dashboard')">
+            <i class="ti ti-checkbox"></i>
+            <span>My Tasks</span>
+          </a>
+          <a class="sidebar-link" onclick="switchView('employee-performance')">
+            <i class="ti ti-chart-line"></i>
+            <span>Performance</span>
+          </a>
+          <div class="menu-label">Account</div>
+          <a class="sidebar-link" onclick="switchView('employee-settings')">
+            <i class="ti ti-settings"></i>
+            <span>Settings</span>
+          </a>
+        `;
+      }
+
+      // Update footer profile card
+      document.getElementById('nav-username').innerText = appState.currentUser.name;
+      document.getElementById('nav-userrole').innerText = role === 'admin' ? 'Administrator' : 'Employee';
+      document.getElementById('nav-avatar').innerText = getInitials(appState.currentUser.name);
+    }
+
+    function switchTaskLayout(layoutId) {
+      appState.taskLayout = layoutId;
+      document.querySelectorAll('.tab-pill').forEach(pill => pill.classList.remove('active'));
+      document.getElementById(`pill-layout-${layoutId}`).classList.add('active');
+
+      document.getElementById('admin-task-layout-kanban').style.display = (layoutId === 'kanban') ? 'flex' : 'none';
+      document.getElementById('admin-task-layout-list').style.display = (layoutId === 'list') ? 'block' : 'none';
+
+      renderAdminTasks();
+    }
+
+    function toggleMobileSidebar() {
+      document.getElementById('sidebar').classList.toggle('mobile-active');
+    }
+
+    // ----------------------------------------------------
+    // 3. LOGIN & OUT FLOWS
+    // ----------------------------------------------------
+    function switchLoginPortal(role) {
+      appState.loginPortal = role;
+      document.getElementById('btn-portal-admin').classList.toggle('active', role === 'admin');
+      document.getElementById('btn-portal-employee').classList.toggle('active', role === 'employee');
+      document.getElementById('login-user-label').innerText = role === 'admin' ? 'Username' : 'Email Address';
+      document.getElementById('login-username').placeholder = role === 'admin' ? 'Enter username' : 'Enter work email';
+      document.getElementById('login-form').reset();
+    }
+
+    function handleLoginSubmit(e) {
+      e.preventDefault();
+      const userInput = document.getElementById('login-username').value.trim();
+      const passInput = document.getElementById('login-password').value;
+
+      if (appState.loginPortal === 'admin') {
+        const admins = getAdmins();
+        const found = admins.find(a => a.username === userInput && a.password === passInput);
+        if (found) {
+          appState.currentUser = {
+            id: found.id,
+            username: found.username,
+            name: "System Admin",
+            role: "admin"
+          };
+          sessionStorage.setItem('tp_session', JSON.stringify(appState.currentUser));
+          showToast("Admin session started", "success");
+          checkSession();
+        } else {
+          showToast("Invalid admin username or password", "danger");
+        }
+      } else {
+        const employees = getEmployees();
+        const found = employees.find(emp => emp.email.toLowerCase() === userInput.toLowerCase() && emp.password === passInput);
+        if (found) {
+          appState.currentUser = {
+            id: found.id,
+            username: found.email,
+            name: found.name,
+            role: "employee"
+          };
+          sessionStorage.setItem('tp_session', JSON.stringify(appState.currentUser));
+          showToast(`Welcome back, ${found.name}`, "success");
+          checkSession();
+        } else {
+          showToast("Invalid email address or password", "danger");
+        }
+      }
+    }
+
+    function handleLogout() {
+      sessionStorage.removeItem('tp_session');
+      appState.currentUser = null;
+      showToast("Session ended successfully", "info");
+      checkSession();
+    }
+
+    // ----------------------------------------------------
+    // 4. ADMIN DASHBOARD & CHARTS
+    // ----------------------------------------------------
+    function renderAdminDashboard() {
+      const emps = getEmployees();
+      const tasks = getTasks();
+      const history = getHistory();
+
+      // Stats Count
+      const totalEmps = emps.length;
+      const totalTasks = tasks.length;
+      const completed = tasks.filter(t => t.status === 'completed').length;
+      const progress = tasks.filter(t => t.status === 'inprogress').length;
+      const pending = tasks.filter(t => t.status === 'todo').length;
+
+      document.getElementById('kpi-total-employees').innerText = totalEmps;
+      document.getElementById('kpi-total-tasks').innerText = totalTasks;
+      document.getElementById('kpi-completed-tasks').innerText = completed;
+      document.getElementById('kpi-inprogress-tasks').innerText = progress;
+      document.getElementById('kpi-pending-tasks').innerText = pending;
+
+      const completionRate = totalTasks > 0 ? Math.round((completed / totalTasks) * 100) : 0;
+      document.getElementById('kpi-completed-rate').innerText = `${completionRate}% average rate`;
+
+      // Employee workloads Matrix Table
+      const matrixBody = document.getElementById('admin-matrix-table-body');
+      matrixBody.innerHTML = '';
+
+      if (totalEmps === 0) {
+        matrixBody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: var(--color-text-muted); padding: 24px;">No employees registered in the system yet.</td></tr>`;
+      } else {
+        emps.forEach(emp => {
+          const empTasks = tasks.filter(t => t.assigneeId === emp.id);
+          const tTodo = empTasks.filter(t => t.status === 'todo').length;
+          const tProgress = empTasks.filter(t => t.status === 'inprogress').length;
+          const tDone = empTasks.filter(t => t.status === 'completed').length;
+
+          // Calculate custom score: 100 max, penalty for overdue or pending
+          let score = 100;
+          if (empTasks.length > 0) {
+            const ratio = tDone / empTasks.length;
+            score = Math.round(50 + (ratio * 50));
+          } else {
+            score = 100;
+          }
+
+          matrixBody.innerHTML += `
+            <tr>
+              <td>
+                <div class="avatar-cell">
+                  <div class="avatar-sm" style="background-color: var(--color-primary-light); color: var(--color-primary);">${getInitials(emp.name)}</div>
+                  <strong>${emp.name}</strong>
+                </div>
+              </td>
+              <td>${emp.department}</td>
+              <td>${emp.role}</td>
+              <td style="font-weight: 600;">${tTodo}</td>
+              <td style="font-weight: 600;">${tProgress}</td>
+              <td style="font-weight: 600; color: var(--color-success);">${tDone}</td>
+              <td><span class="badge ${score > 80 ? 'badge-success' : 'badge-warning'}">${score} Score</span></td>
+            </tr>
+          `;
+        });
+      }
+
+      // Recent Updates Timeline
+      const timelineBox = document.getElementById('recent-updates-timeline');
+      timelineBox.innerHTML = '';
+
+      if (history.length === 0) {
+        timelineBox.innerHTML = `<div style="text-align: center; font-size:12px; color:var(--color-text-light); padding: 20px;">No updates recorded yet.</div>`;
+      } else {
+        // Take last 5 updates
+        const recent = history.slice(0, 5);
+        let timelineHTML = '<div class="timeline">';
+        recent.forEach(log => {
+          const task = tasks.find(t => t.id === log.taskId);
+          const title = task ? task.title : 'Deleted Task';
+          
+          let fromName = log.fromStatus === 'todo' ? 'Pending' : log.fromStatus === 'inprogress' ? 'In Progress' : 'Completed';
+          let toName = log.toStatus === 'todo' ? 'Pending' : log.toStatus === 'inprogress' ? 'In Progress' : 'Completed';
+
+          timelineHTML += `
+            <div class="timeline-item">
+              <span class="timeline-marker ${log.toStatus}"></span>
+              <div class="timeline-content">
+                <div class="timeline-title">
+                  <strong>${log.actor}</strong> changed status of <strong>"${title}"</strong> to <span class="badge ${log.toStatus === 'completed' ? 'badge-success' : 'badge-info'}" style="padding: 1px 6px; font-size: 9px;">${toName}</span>
+                </div>
+                ${log.note ? `<div class="timeline-note">"${log.note}"</div>` : ''}
+                <div class="timeline-date">${log.timestamp}</div>
+              </div>
+            </div>
+          `;
+        });
+        timelineHTML += '</div>';
+        timelineBox.innerHTML = timelineHTML;
+      }
+
+      // Initialize Donut Chart
+      initAdminDonutChart(pending, progress, completed);
+    }
+
+    function initAdminDonutChart(todo, progress, completed) {
+      const isDark = document.body.getAttribute('data-theme') === 'dark';
+      const labelColor = isDark ? '#94A3B8' : '#64748B';
+      const canvas = document.getElementById('adminStatusDonutChart');
+
+      if (!canvas) return;
+
+      if (todo === 0 && progress === 0 && completed === 0) {
+        // Empty State: Hide Chart element and display label
+        document.getElementById('donut-chart-wrapper').innerHTML = `
+          <div class="empty-state">
+            <div class="empty-state-icon" style="font-size:32px;"><i class="ti ti-chart-pie-off"></i></div>
+            <div class="empty-state-title">No Chart Data</div>
+            <div class="empty-state-desc">Assign tasks to show status details</div>
+          </div>
+        `;
+        return;
+      }
+
+      // Re-create canvas if replaced by empty state previously
+      if (!document.getElementById('adminStatusDonutChart')) {
+        document.getElementById('donut-chart-wrapper').innerHTML = '<canvas id="adminStatusDonutChart"></canvas>';
+      }
+
+      if (dashboardDonutChart) dashboardDonutChart.destroy();
+
+      dashboardDonutChart = new Chart(document.getElementById('adminStatusDonutChart'), {
+        type: 'doughnut',
+        data: {
+          labels: ['Pending', 'In Progress', 'Completed'],
+          datasets: [{
+            data: [todo, progress, completed],
+            backgroundColor: ['#94A3B8', '#2563EB', '#10B981'],
+            borderWidth: 0,
+            hoverOffset: 4
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'bottom',
+              labels: { color: labelColor, boxWidth: 12, font: { family: 'Plus Jakarta Sans', size: 11 } }
+            }
+          },
+          cutout: '70%'
+        }
+      });
+    }
+
+    // ----------------------------------------------------
+    // 5. ADMIN TASK MANAGEMENT (CRUD & Drag-Drop)
+    // ----------------------------------------------------
+    function populateAssigneeSelects() {
+      const select = document.getElementById('task-form-assignee');
+      const filterSelect = document.getElementById('admin-task-assignee-filter');
+      
+      const emps = getEmployees();
+      
+      select.innerHTML = '<option value="">-- Choose Employee --</option>';
+      filterSelect.innerHTML = '<option value="All">All Assignees</option>';
+      
+      emps.forEach(emp => {
+        select.innerHTML += `<option value="${emp.id}">${emp.name} (${emp.department})</option>`;
+        filterSelect.innerHTML += `<option value="${emp.id}">${emp.name}</option>`;
+      });
+    }
+
+    function renderAdminTasks() {
+      populateAssigneeSelects();
+
+      const searchVal = document.getElementById('admin-task-search').value.toLowerCase();
+      const priorityVal = document.getElementById('admin-task-priority-filter').value;
+      const assigneeVal = document.getElementById('admin-task-assignee-filter').value;
+
+      const tasks = getTasks();
+      const emps = getEmployees();
+
+      let filtered = tasks.filter(t => {
+        const matchesSearch = t.title.toLowerCase().includes(searchVal) || t.desc.toLowerCase().includes(searchVal);
+        const matchesPriority = priorityVal === 'All' || t.priority === priorityVal;
+        const matchesAssignee = assigneeVal === 'All' || String(t.assigneeId) === assigneeVal;
+        return matchesSearch && matchesPriority && matchesAssignee;
+      });
+
+      if (appState.taskLayout === 'kanban') {
+        renderAdminKanban(filtered, emps);
+      } else {
+        renderAdminList(filtered, emps);
+      }
+    }
+
+    function renderAdminKanban(filtered, emps) {
+      const cols = {
+        todo: document.querySelector('#admin-col-todo .kanban-cards'),
+        inprogress: document.querySelector('#admin-col-inprogress .kanban-cards'),
+        completed: document.querySelector('#admin-col-completed .kanban-cards')
+      };
+
+      // Clear columns
+      Object.keys(cols).forEach(k => {
+        cols[k].innerHTML = '';
+        document.getElementById(`admin-count-${k}`).innerText = '0';
+      });
+
+      let colCounts = { todo: 0, inprogress: 0, completed: 0 };
+
+      if (filtered.length === 0) {
+        Object.keys(cols).forEach(k => {
+          cols[k].innerHTML = `<div style="text-align: center; color: var(--color-text-light); font-size:11px; padding: 20px;">No tasks</div>`;
+        });
+        return;
+      }
+
+      filtered.forEach(task => {
+        const assignee = emps.find(e => e.id === task.assigneeId);
+        const name = assignee ? assignee.name : 'Deleted';
+        const initials = getInitials(name);
+
+        let priorityBadge = 'badge-neutral';
+        if (task.priority === 'High') priorityBadge = 'badge-danger';
+        else if (task.priority === 'Medium') priorityBadge = 'badge-warning';
+
+        const noteSnippet = task.completionNote ? `<div style="font-size:10px; color:var(--color-success); border-left: 2px solid var(--color-success); padding-left:6px; margin: 6px 0 0;">Note: "${task.completionNote}"</div>` : '';
+
+        const card = `
+          <div class="task-card" draggable="true" ondragstart="handleDragStart(event, ${task.id})" id="admin-task-card-${task.id}">
+            <div class="task-tag-row">
+              <span class="badge ${priorityBadge}">${task.priority}</span>
+              <div style="display:flex; gap:6px;">
+                <button class="nav-action-btn btn-sm" style="width:20px; height:20px; border:none; padding:0;" onclick="editAdminTask(${task.id})"><i class="ti ti-pencil"></i></button>
+                <button class="nav-action-btn btn-sm" style="width:20px; height:20px; border:none; padding:0; color:var(--color-danger);" onclick="deleteAdminTask(${task.id})"><i class="ti ti-trash"></i></button>
+              </div>
+            </div>
+            <div class="task-title">${task.title}</div>
+            <div class="task-desc">${task.desc}</div>
+            ${noteSnippet}
+            <div class="task-footer">
+              <span class="task-meta"><i class="ti ti-calendar"></i> ${task.duedate}</span>
+              <div class="task-assignee" title="${name}">${initials}</div>
+            </div>
+          </div>
+        `;
+
+        if (cols[task.status]) {
+          cols[task.status].innerHTML += card;
+          colCounts[task.status]++;
+        }
+      });
+
+      Object.keys(colCounts).forEach(k => {
+        document.getElementById(`admin-count-${k}`).innerText = colCounts[k];
+      });
+    }
+
+    function renderAdminList(filtered, emps) {
+      const tbody = document.getElementById('admin-task-list-tbody');
+      tbody.innerHTML = '';
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--color-text-muted); padding: 24px;">No tasks created yet.</td></tr>`;
+        return;
+      }
+
+      filtered.forEach(t => {
+        const assignee = emps.find(e => e.id === t.assigneeId);
+        const name = assignee ? assignee.name : 'Deleted';
+
+        let priBadge = 'badge-neutral';
+        if (t.priority === 'High') priBadge = 'badge-danger';
+        else if (t.priority === 'Medium') priBadge = 'badge-warning';
+
+        tbody.innerHTML += `
+          <tr>
+            <td>
+              <strong>${t.title}</strong>
+              <div style="font-size:11px; color: var(--color-text-muted); margin-top:2px;">${t.desc}</div>
+            </td>
+            <td><span class="badge ${priBadge}">${t.priority}</span></td>
+            <td><span class="badge ${t.status === 'completed' ? 'badge-success' : 'badge-info'}">${t.status}</span></td>
+            <td>${name}</td>
+            <td>${t.duedate}</td>
+            <td>
+              <div style="display:flex; gap:8px;">
+                <button class="btn btn-secondary btn-sm" onclick="editAdminTask(${t.id})"><i class="ti ti-pencil"></i> Edit</button>
+                <button class="btn btn-secondary btn-sm" style="color:var(--color-danger); border-color:var(--color-danger-light);" onclick="deleteAdminTask(${t.id})"><i class="ti ti-trash"></i> Delete</button>
+              </div>
+            </td>
+          </tr>
+        `;
+      });
+    }
+
+    // Drag-Drop Implementations
+    let draggedTaskId = null;
+    function handleDragStart(e, taskId) {
+      draggedTaskId = taskId;
+      e.dataTransfer.setData('text/plain', taskId);
+    }
+    function allowDrop(e) { e.preventDefault(); }
+    function dragEnter(e) { e.preventDefault(); e.currentTarget.classList.add('dragover'); }
+    function dragLeave(e) { e.currentTarget.classList.remove('dragover'); }
+    
+    function handleDrop(e, status) {
+      e.preventDefault();
+      e.currentTarget.classList.remove('dragover');
+      
+      const id = parseInt(e.dataTransfer.getData('text/plain') || draggedTaskId);
+      const tasks = getTasks();
+      const taskIndex = tasks.findIndex(t => t.id === id);
+
+      if (taskIndex !== -1 && tasks[taskIndex].status !== status) {
+        const oldStatus = tasks[taskIndex].status;
+        tasks[taskIndex].status = status;
+        
+        if (status !== 'completed') {
+          tasks[taskIndex].completionNote = '';
+        }
+
+        saveTasks(tasks);
+        logStatusTransition(id, oldStatus, status, "Dragged and dropped via Board", appState.currentUser.name);
+        
+        renderAdminTasks();
+        showToast("Task status updated", "success");
+      }
+    }
+
+    // Task CRUD forms
+    function openNewTaskModal() {
+      const emps = getEmployees();
+      if (emps.length === 0) {
+        showToast("Please register at least one employee account first", "warning");
+        switchView('admin-employees');
+        return;
+      }
+
+      document.getElementById('task-form-id').value = '';
+      document.getElementById('task-form').reset();
+      populateAssigneeSelects();
+      
+      // Default to 3 days out
+      const date = new Date();
+      date.setDate(date.getDate() + 3);
+      document.getElementById('task-form-duedate').value = date.toISOString().split('T')[0];
+
+      document.getElementById('task-modal').classList.add('active');
+    }
+
+    function editAdminTask(id) {
+      const tasks = getTasks();
+      const task = tasks.find(t => t.id === id);
+      if (!task) return;
+
+      document.getElementById('task-form-id').value = task.id;
+      document.getElementById('task-form-title').value = task.title;
+      document.getElementById('task-form-desc').value = task.desc;
+      
+      populateAssigneeSelects();
+      document.getElementById('task-form-assignee').value = task.assigneeId;
+      document.getElementById('task-form-priority').value = task.priority;
+      document.getElementById('task-form-duedate').value = task.duedate;
+      document.getElementById('task-form-status').value = task.status;
+
+      document.getElementById('task-modal').classList.add('active');
+    }
+
+    function deleteAdminTask(id) {
+      if (confirm("Are you sure you want to delete this task?")) {
+        let tasks = getTasks();
+        tasks = tasks.filter(t => t.id !== id);
+        saveTasks(tasks);
+        renderAdminTasks();
+        showToast("Task assignment deleted", "success");
+      }
+    }
+
+    function closeTaskModal() {
+      document.getElementById('task-modal').classList.remove('active');
+    }
+
+    function handleTaskFormSubmit(e) {
+      e.preventDefault();
+      const id = document.getElementById('task-form-id').value;
+      const title = document.getElementById('task-form-title').value.trim();
+      const desc = document.getElementById('task-form-desc').value.trim();
+      const assigneeId = parseInt(document.getElementById('task-form-assignee').value);
+      const priority = document.getElementById('task-form-priority').value;
+      const duedate = document.getElementById('task-form-duedate').value;
+      const status = document.getElementById('task-form-status').value;
+
+      const tasks = getTasks();
+
+      if (id) {
+        // Edit Mode
+        const taskIdx = tasks.findIndex(t => t.id === parseInt(id));
+        if (taskIdx !== -1) {
+          const old = tasks[taskIdx].status;
+          tasks[taskIdx] = {
+            ...tasks[taskIdx],
+            title, desc, assigneeId, priority, duedate, status
+          };
+          if (old !== status) {
+            logStatusTransition(parseInt(id), old, status, "Updated via Form", appState.currentUser.name);
+          }
+          saveTasks(tasks);
+          showToast("Task updated", "success");
+        }
+      } else {
+        // Add Mode
+        const newId = Date.now() + Math.floor(Math.random() * 100);
+        const newTask = {
+          id: newId,
+          title, desc, assigneeId, priority, duedate, status,
+          completionNote: ''
+        };
+        tasks.push(newTask);
+        saveTasks(tasks);
+        logStatusTransition(newId, 'none', status, "Assigned new task", appState.currentUser.name);
+        showToast("New task assigned", "success");
+      }
+
+      closeTaskModal();
+      renderAdminTasks();
+    }
+
+    // ----------------------------------------------------
+    // 6. ADMIN EMPLOYEE MANAGEMENT
+    // ----------------------------------------------------
+    function renderAdminEmployeesDirectory() {
+      const grid = document.getElementById('admin-employees-grid');
+      grid.innerHTML = '';
+      
+      const emps = getEmployees();
+      const tasks = getTasks();
+
+      if (emps.length === 0) {
+        grid.innerHTML = `
+          <div style="grid-column: 1/-1; text-align: center; padding: 40px 0;">
+            <div class="empty-state">
+              <div class="empty-state-icon"><i class="ti ti-users"></i></div>
+              <div class="empty-state-title">No Registered Employees</div>
+              <div class="empty-state-desc">Create employee accounts to begin task assignments</div>
+              <button class="btn btn-primary btn-sm" onclick="openNewEmployeeModal()">Register Employee</button>
+            </div>
+          </div>
+        `;
+        return;
+      }
+
+      emps.forEach(emp => {
+        const empTasks = tasks.filter(t => t.assigneeId === emp.id);
+        const completed = empTasks.filter(t => t.status === 'completed').length;
+        const pending = empTasks.length - completed;
+
+        grid.innerHTML += `
+          <div class="card employee-card">
+            <div class="emp-card-header">
+              <button class="btn btn-secondary btn-sm" style="color:var(--color-danger);" onclick="deleteEmployee(${emp.id})"><i class="ti ti-trash"></i></button>
+            </div>
+            <div class="emp-card-avatar" style="background-color: var(--color-primary); color: white;">${getInitials(emp.name)}</div>
+            <div class="emp-card-name">${emp.name}</div>
+            <div class="emp-card-dept">${emp.role} • <strong>${emp.department}</strong></div>
+            <div style="font-size:11.5px; color:var(--color-text-muted); margin-top: 6px;"><i class="ti ti-mail"></i> ${emp.email}</div>
+            
+            <div class="emp-card-stats">
+              <div>
+                <div class="emp-card-stat-label">Tasks Scoped</div>
+                <div class="emp-card-stat-val">${empTasks.length}</div>
+              </div>
+              <div>
+                <div class="emp-card-stat-label">Pending / Active</div>
+                <div class="emp-card-stat-val">${pending}</div>
+              </div>
+            </div>
+
+            <div style="display:flex; gap:8px; margin-top:10px;">
+              <button class="btn btn-secondary btn-sm" style="flex:1; justify-content:center;" onclick="openResetPassword(${emp.id}, '${emp.name}')">
+                <i class="ti ti-key"></i> Reset Pass
+              </button>
+            </div>
+          </div>
+        `;
+      });
+    }
+
+    function openNewEmployeeModal() {
+      document.getElementById('employee-form').reset();
+      const emailInput = document.getElementById('emp-form-email');
+      const emailError = document.getElementById('emp-form-email-error');
+      if (emailInput) emailInput.style.borderColor = '';
+      if (emailError) {
+        emailError.style.display = 'none';
+        emailError.innerText = '';
+      }
+      document.getElementById('employee-modal').classList.add('active');
+    }
+
+    function closeEmployeeModal() {
+      document.getElementById('employee-modal').classList.remove('active');
+    }
+
+    async function handleEmployeeFormSubmit(e) {
+      e.preventDefault();
+      const name = document.getElementById('emp-form-name').value.trim();
+      const department = document.getElementById('emp-form-dept').value;
+      const role = document.getElementById('emp-form-role').value.trim();
+      const email = document.getElementById('emp-form-email').value.trim();
+      const phone = document.getElementById('emp-form-phone').value.trim();
+      const password = document.getElementById('emp-form-password').value || '123456';
+
+      const emailInput = document.getElementById('emp-form-email');
+      const emailError = document.getElementById('emp-form-email-error');
+
+      // Reset errors
+      if (emailInput) emailInput.style.borderColor = '';
+      if (emailError) {
+        emailError.style.display = 'none';
+        emailError.innerText = '';
+      }
+
+      // Clear error state on user typing
+      if (emailInput && !emailInput.dataset.listenerAdded) {
+        emailInput.addEventListener('input', () => {
+          emailInput.style.borderColor = '';
+          if (emailError) {
+            emailError.style.display = 'none';
+            emailError.innerText = '';
+          }
+        });
+        emailInput.dataset.listenerAdded = 'true';
+      }
+
+      // Real-world email validation check
+      const isValidEmail = await validateEmailRealWorld(email);
+      if (!isValidEmail) {
+        if (emailInput) emailInput.style.borderColor = 'var(--color-danger)';
+        if (emailError) {
+          emailError.innerText = 'Please enter a valid active email address.';
+          emailError.style.display = 'block';
+        } else {
+          showToast("Please enter a valid active email address", "danger");
+        }
+        return;
+      }
+
+      const emps = getEmployees();
+      
+      // Duplicate Email Check
+      if (emps.find(emp => emp.email.toLowerCase() === email.toLowerCase())) {
+        showToast("An employee account with that email already exists", "danger");
+        return;
+      }
+
+      const newEmp = {
+        id: Date.now(),
+        name, department, role, email, phone, password
+      };
+
+      emps.push(newEmp);
+      saveEmployees(emps);
+      
+      closeEmployeeModal();
+      renderAdminEmployeesDirectory();
+      showToast(`Account created for ${name}`, "success");
+    }
+
+    function deleteEmployee(id) {
+      if (confirm("Are you sure you want to delete this employee account?")) {
+        let emps = getEmployees();
+        emps = emps.filter(e => e.id !== id);
+        saveEmployees(emps);
+
+        // Cascade delete tasks assignee
+        let tasks = getTasks();
+        tasks = tasks.filter(t => t.assigneeId !== id);
+        saveTasks(tasks);
+
+        renderAdminEmployeesDirectory();
+        showToast("Employee account deleted", "success");
+      }
+    }
+
+    // Password resets
+    function openResetPassword(id, name) {
+      document.getElementById('reset-emp-id').value = id;
+      document.getElementById('reset-emp-name').value = name;
+      document.getElementById('reset-emp-password').value = '';
+      document.getElementById('reset-password-modal').classList.add('active');
+    }
+    function closeResetPasswordModal() {
+      document.getElementById('reset-password-modal').classList.remove('active');
+    }
+    function handleResetPasswordSubmit(e) {
+      e.preventDefault();
+      const id = parseInt(document.getElementById('reset-emp-id').value);
+      const newPass = document.getElementById('reset-emp-password').value;
+
+      const emps = getEmployees();
+      const idx = emps.findIndex(e => e.id === id);
+      if (idx !== -1) {
+        emps[idx].password = newPass;
+        saveEmployees(emps);
+        showToast(`Password updated for ${emps[idx].name}`, "success");
+      }
+      closeResetPasswordModal();
+    }
+
+    // ----------------------------------------------------
+    // 7. ADMIN DEPARTMENTS & TEAMS
+    // ----------------------------------------------------
+    function renderAdminTeams() {
+      const container = document.getElementById('admin-teams-grid');
+      container.innerHTML = '';
+
+      const depts = ["Engineering", "Finance", "Design", "Infrastructure", "Security"];
+      const emps = getEmployees();
+      const tasks = getTasks();
+
+      depts.forEach(d => {
+        const teamEmps = emps.filter(e => e.department === d);
+        const teamEmpIds = teamEmps.map(e => e.id);
+        const teamTasks = tasks.filter(t => teamEmpIds.includes(t.assigneeId));
+        
+        const total = teamTasks.length;
+        const completed = teamTasks.filter(t => t.status === 'completed').length;
+        const progress = teamTasks.filter(t => t.status === 'inprogress').length;
+
+        container.innerHTML += `
+          <div class="card">
+            <div class="card-title-bar">
+              <h3 style="font-size: 16px;">${d} Department</h3>
+              <span class="badge badge-info">${teamEmps.length} Active Staff</span>
+            </div>
+            
+            <div class="emp-card-stats" style="border-bottom:none; margin: 10px 0; padding-bottom: 0;">
+              <div>
+                <div class="emp-card-stat-label">Tasks Scoped</div>
+                <div class="emp-card-stat-val">${total}</div>
+              </div>
+              <div>
+                <div class="emp-card-stat-label">Completed</div>
+                <div class="emp-card-stat-val" style="color:var(--color-success);">${completed}</div>
+              </div>
+              <div>
+                <div class="emp-card-stat-label">In Progress</div>
+                <div class="emp-card-stat-val" style="color:var(--color-primary);">${progress}</div>
+              </div>
+            </div>
+          </div>
+        `;
+      });
+    }
+
+    // ----------------------------------------------------
+    // 8. ADMIN REPORTS
+    // ----------------------------------------------------
+    function generateAdminReport() {
+      const dept = document.getElementById('report-dept-select').value;
+      const priority = document.getElementById('report-priority-select').value;
+
+      const emps = getEmployees();
+      const tasks = getTasks();
+
+      let filteredEmps = emps;
+      if (dept !== 'All') {
+        filteredEmps = emps.filter(e => e.department === dept);
+      }
+      const empIds = filteredEmps.map(e => e.id);
+
+      let filteredTasks = tasks.filter(t => empIds.includes(t.assigneeId));
+      if (priority !== 'All') {
+        filteredTasks = filteredTasks.filter(t => t.priority === priority);
+      }
+
+      const tbody = document.getElementById('report-table-body');
+      tbody.innerHTML = '';
+
+      if (filteredTasks.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color:var(--color-text-muted); padding:20px;">No records match query filters</td></tr>`;
+        return;
+      }
+
+      filteredTasks.forEach(t => {
+        const assignee = emps.find(e => e.id === t.assigneeId);
+        const name = assignee ? assignee.name : 'Deleted';
+
+        tbody.innerHTML += `
+          <tr>
+            <td>#${t.id}</td>
+            <td><strong>${t.title}</strong></td>
+            <td>${name}</td>
+            <td><span class="badge ${t.status === 'completed' ? 'badge-success' : 'badge-info'}">${t.status}</span></td>
+            <td>${t.priority}</td>
+            <td>${t.duedate}</td>
+          </tr>
+        `;
+      });
+    }
+
+    function exportAdminDataToCSV() {
+      const tasks = getTasks();
+      const emps = getEmployees();
+
+      let csv = "data:text/csv;charset=utf-8,";
+      csv += "Task ID,Title,Description,Priority,Status,Assignee,Due Date,Completion Note\n";
+
+      tasks.forEach(t => {
+        const assignee = emps.find(e => e.id === t.assigneeId);
+        const name = assignee ? assignee.name : 'Deleted';
+        csv += `${t.id},"${t.title.replace(/"/g, '""')}","${t.desc.replace(/"/g, '""')}",${t.priority},${t.status},"${name.replace(/"/g, '""')}",${t.duedate},"${(t.completionNote || '').replace(/"/g, '""')}"\n`;
+      });
+
+      const uri = encodeURI(csv);
+      const link = document.createElement("a");
+      link.setAttribute("href", uri);
+      link.setAttribute("download", `taskpilot_report_${new Date().toISOString().split('T')[0]}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      showToast("CSV file generated", "success");
+    }
+
+    // ----------------------------------------------------
+    // 9. ADMIN SETTINGS
+    // ----------------------------------------------------
+    function populateAdminSettings() {
+      const admins = getAdmins();
+      // Use currently logged in admin record
+      const current = admins.find(a => a.id === appState.currentUser.id);
+      if (current) {
+        document.getElementById('admin-username-input').value = current.username;
+        document.getElementById('admin-password-input').value = '';
+      }
+    }
+
+    function handleAdminSettingsSave(e) {
+      e.preventDefault();
+      const username = document.getElementById('admin-username-input').value.trim();
+      const pass = document.getElementById('admin-password-input').value;
+
+      const admins = getAdmins();
+      const idx = admins.findIndex(a => a.id === appState.currentUser.id);
+      if (idx !== -1) {
+        admins[idx].username = username;
+        if (pass) admins[idx].password = pass;
+        saveAdmins(admins);
+
+        // Update active session metadata
+        appState.currentUser.username = username;
+        sessionStorage.setItem('tp_session', JSON.stringify(appState.currentUser));
+        renderSidebar();
+        showToast("Settings saved", "success");
+      }
+    }
+
+    // ----------------------------------------------------
+    // 10. EMPLOYEE CONSOLE & STATUS ACTIONS
+    // ----------------------------------------------------
+    function renderEmployeeDashboard() {
+      const tasks = getTasks();
+      const empId = appState.currentUser.id;
+
+      // Filter tasks for this employee only
+      const myTasks = tasks.filter(t => t.assigneeId === empId);
+
+      const assigned = myTasks.length;
+      const completed = myTasks.filter(t => t.status === 'completed').length;
+      const progress = myTasks.filter(t => t.status === 'inprogress').length;
+      const pending = myTasks.filter(t => t.status === 'todo').length;
+
+      document.getElementById('emp-kpi-assigned').innerText = assigned;
+      document.getElementById('emp-kpi-completed').innerText = completed;
+      document.getElementById('emp-kpi-inprogress').innerText = progress;
+      document.getElementById('emp-kpi-pending').innerText = pending;
+
+      // Render Task List
+      const tbody = document.getElementById('employee-task-table-body');
+      tbody.innerHTML = '';
+
+      if (myTasks.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--color-text-muted); padding: 24px;">No tasks assigned to you yet.</td></tr>`;
+        return;
+      }
+
+      myTasks.forEach(t => {
+        let priBadge = 'badge-neutral';
+        if (t.priority === 'High') priBadge = 'badge-danger';
+        else if (t.priority === 'Medium') priBadge = 'badge-warning';
+
+        tbody.innerHTML += `
+          <tr>
+            <td>
+              <strong>${t.title}</strong>
+              <div style="font-size:11px; color:var(--color-text-muted); margin-top:2px;">${t.desc}</div>
+            </td>
+            <td><span class="badge ${priBadge}">${t.priority}</span></td>
+            <td><span class="badge ${t.status === 'completed' ? 'badge-success' : 'badge-info'}">${t.status}</span></td>
+            <td>${t.duedate}</td>
+            <td style="font-style: italic; color:var(--color-text-muted); font-size:11px;">
+              ${t.completionNote ? `"${t.completionNote}"` : '—'}
+            </td>
+            <td>
+              <button class="btn btn-primary btn-sm" onclick="openStatusUpdateModal(${t.id}, '${t.title.replace(/'/g, "\\'")}', '${t.status}')">
+                <i class="ti ti-edit"></i> Update Status
+              </button>
+            </td>
+          </tr>
+        `;
+      });
+    }
+
+    // Status Updates Modals
+    function openStatusUpdateModal(id, title, status) {
+      document.getElementById('status-task-id').value = id;
+      document.getElementById('status-task-title').value = title;
+      document.getElementById('status-task-select').value = status;
+      document.getElementById('status-task-note').value = '';
+      
+      toggleCompletionNoteRequired(status);
+      document.getElementById('status-update-modal').classList.add('active');
+    }
+
+    function toggleCompletionNoteRequired(val) {
+      const label = document.getElementById('completion-note-label');
+      const text = document.getElementById('status-task-note');
+      if (val === 'completed') {
+        label.innerHTML = 'Work Progress / Completion Note <span style="color:var(--color-danger);">*</span>';
+        text.required = true;
+      } else {
+        label.innerHTML = 'Work Progress / Completion Note';
+        text.required = false;
+      }
+    }
+
+    function closeStatusUpdateModal() {
+      document.getElementById('status-update-modal').classList.remove('active');
+    }
+
+    function handleStatusUpdateFormSubmit(e) {
+      e.preventDefault();
+      const id = parseInt(document.getElementById('status-task-id').value);
+      const targetStatus = document.getElementById('status-task-select').value;
+      const note = document.getElementById('status-task-note').value.trim();
+
+      const tasks = getTasks();
+      const idx = tasks.findIndex(t => t.id === id);
+
+      if (idx !== -1) {
+        const oldStatus = tasks[idx].status;
+        tasks[idx].status = targetStatus;
+        tasks[idx].completionNote = targetStatus === 'completed' ? note : '';
+
+        saveTasks(tasks);
+        logStatusTransition(id, oldStatus, targetStatus, note, appState.currentUser.name);
+
+        showToast("Task status updated", "success");
+        closeStatusUpdateModal();
+        renderEmployeeDashboard();
+      }
+    }
+
+    // Employee Performance Metrics
+    function renderEmployeePerformance() {
+      const tasks = getTasks();
+      const history = getHistory();
+      const empId = appState.currentUser.id;
+
+      const myTasks = tasks.filter(t => t.assigneeId === empId);
+      const completedCount = myTasks.filter(t => t.status === 'completed').length;
+      
+      const rate = myTasks.length > 0 ? Math.round((completedCount / myTasks.length) * 100) : 0;
+      document.getElementById('emp-perf-score').innerText = rate;
+
+      // Personal Activity Log
+      const list = document.getElementById('employee-recent-logs');
+      list.innerHTML = '';
+
+      // Filter global logs by this employee's actions
+      const myLogs = history.filter(h => h.actor === appState.currentUser.name);
+
+      if (myLogs.length === 0) {
+        list.innerHTML = `<div style="text-align:center; font-size:12px; color:var(--color-text-light); padding:20px;">No updates made yet.</div>`;
+      } else {
+        let timelineHTML = '<div class="timeline">';
+        myLogs.slice(0, 10).forEach(log => {
+          const task = tasks.find(t => t.id === log.taskId);
+          const title = task ? task.title : 'Deleted Task';
+          let toName = log.toStatus === 'todo' ? 'Pending' : log.toStatus === 'inprogress' ? 'In Progress' : 'Completed';
+
+          timelineHTML += `
+            <div class="timeline-item">
+              <span class="timeline-marker ${log.toStatus}"></span>
+              <div class="timeline-content">
+                <div class="timeline-title">Changed status of <strong>"${title}"</strong> to <span class="badge ${log.toStatus === 'completed' ? 'badge-success' : 'badge-info'}" style="padding: 1px 6px; font-size: 9px;">${toName}</span></div>
+                ${log.note ? `<div class="timeline-note">"${log.note}"</div>` : ''}
+                <div class="timeline-date">${log.timestamp}</div>
+              </div>
+            </div>
+          `;
+        });
+        timelineHTML += '</div>';
+        list.innerHTML = timelineHTML;
+      }
+    }
+
+    // Employee Settings
+    function populateEmployeeSettings() {
+      const emps = getEmployees();
+      const current = emps.find(e => e.id === appState.currentUser.id);
+      if (current) {
+        document.getElementById('emp-settings-email').value = current.email;
+        document.getElementById('emp-settings-phone').value = current.phone;
+        document.getElementById('emp-settings-password').value = '';
+      }
+    }
+
+    async function handleEmployeeSettingsSave(e) {
+      e.preventDefault();
+      const email = document.getElementById('emp-settings-email').value.trim();
+      const phone = document.getElementById('emp-settings-phone').value.trim();
+      const password = document.getElementById('emp-settings-password').value;
+
+      // Real-world email validation check
+      const isValidEmail = await validateEmailRealWorld(email);
+      if (!isValidEmail) {
+        showToast("Please enter a valid active email address", "danger");
+        return;
+      }
+
+      const emps = getEmployees();
+      const idx = emps.findIndex(e => e.id === appState.currentUser.id);
+
+      if (idx !== -1) {
+        // Email uniqueness check
+        const conflict = emps.find(e => e.email.toLowerCase() === email.toLowerCase() && e.id !== appState.currentUser.id);
+        if (conflict) {
+          showToast("That email address is already in use", "danger");
+          return;
+        }
+
+        emps[idx].email = email;
+        emps[idx].phone = phone;
+        if (password) emps[idx].password = password;
+
+        saveEmployees(emps);
+
+        // Update session
+        appState.currentUser.username = email;
+        sessionStorage.setItem('tp_session', JSON.stringify(appState.currentUser));
+        renderSidebar();
+
+        showToast("Profile credentials updated", "success");
+      }
+    }
+
+    // ----------------------------------------------------
+    // 11. GENERAL UTILITIES & HELPERS
+    // ----------------------------------------------------
+    function getInitials(name) {
+      if (!name) return "TP";
+      const parts = name.split(' ');
+      return parts.map(p => p[0]).join('').substring(0, 2).toUpperCase();
+    }
+
+    async function validateEmailRealWorld(email) {
+      const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!re.test(email)) return false;
+
+      const domain = email.split('@')[1];
+      if (!domain) return false;
+
+      // 1. Try Google DNS-over-HTTPS API
+      try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 2000);
+        const response = await fetch(`https://dns.google/resolve?name=${encodeURIComponent(domain)}&type=MX`, {
+          signal: controller.signal
+        });
+        clearTimeout(timeoutId);
+        const data = await response.json();
+        if (data.Status === 3) return false;
+        if (data.Answer && data.Answer.length > 0) {
+          return data.Answer.some(record => record.type === 15);
+        }
+        return false;
+      } catch (err) {
+        console.warn('Google DNS DoH failed, trying Cloudflare...', err);
+      }
+
+      // 2. Try Cloudflare DNS-over-HTTPS API
+      try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 2000);
+        const response = await fetch(`https://cloudflare-dns.com/dns-query?name=${encodeURIComponent(domain)}&type=MX`, {
+          headers: { 'accept': 'application/dns-json' },
+          signal: controller.signal
+        });
+        clearTimeout(timeoutId);
+        const data = await response.json();
+        if (data.Status === 3) return false;
+        if (data.Answer && data.Answer.length > 0) {
+          return data.Answer.some(record => record.type === 15);
+        }
+        return false;
+      } catch (err) {
+        console.warn('Cloudflare DNS DoH also failed, falling back to basic validation...', err);
+        return true; // fallback to true
+      }
+    }
+
+    function showToast(message, type = 'info') {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+      toast.className = `toast ${type}`;
+      
+      let icon = 'ti-info-circle';
+      if (type === 'success') icon = 'ti-circle-check';
+      else if (type === 'warning') icon = 'ti-alert-circle';
+      else if (type === 'danger') icon = 'ti-alert-triangle';
+
+      toast.innerHTML = `
+        <i class="ti ${icon} toast-icon"></i>
+        <div class="toast-message">${message}</div>
+      `;
+
+      container.appendChild(toast);
+
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateY(10px)';
+        setTimeout(() => {
+          container.removeChild(toast);
+        }, 300);
+      }, 3000);
+    }
+
+    // Theme toggler
+    function toggleTheme() {
+      const current = document.documentElement.getAttribute('data-theme');
+      let target = 'light';
+      if (current === 'light') target = 'dark';
+
+      document.documentElement.setAttribute('data-theme', target);
+      appState.theme = target;
+
+      const icon = document.getElementById('theme-icon');
+      icon.className = target === 'dark' ? 'ti ti-moon' : 'ti ti-sun';
+
+      // Redraw charts if loaded
+      if (appState.activeView === 'admin-dashboard') {
+        renderAdminDashboard();
+      }
+    }
+
+    // Global Search handler
+    let searchTimeout = null;
+    function handleGlobalSearch(query) {
+      const dropdown = document.getElementById('search-results-dropdown');
+      if (!dropdown) return;
+
+      if (!query || !query.trim()) {
+        dropdown.innerHTML = '';
+        dropdown.style.display = 'none';
+        return;
+      }
+
+      const q = query.toLowerCase().trim();
+
+      dropdown.style.display = 'flex';
+      dropdown.innerHTML = `<div style="text-align: center; padding: 12px; font-size:12px; color:var(--color-text-muted);">Searching tasks...</div>`;
+
+      clearTimeout(searchTimeout);
+      searchTimeout = setTimeout(() => {
+        const user = appState.currentUser;
+        if (!user) return;
+
+        // Get tasks
+        const tasks = getTasks();
+        
+        // Filter tasks by matching title or description
+        // If employee, only show their assigned tasks
+        const filtered = tasks.filter(t => {
+          const matchesQuery = t.title.toLowerCase().includes(q) || t.description.toLowerCase().includes(q);
+          const matchesRole = user.role === 'admin' || t.assignee_id === user.id;
+          return matchesQuery && matchesRole;
+        });
+
+        if (filtered.length === 0) {
+          dropdown.innerHTML = `<div class="search-no-results">No tasks found matching "${query}"</div>`;
+          return;
+        }
+
+        // Render matching tasks (limit to 5)
+        let html = `<div class="search-section-header">Matching Tasks (${filtered.length})</div>`;
+        filtered.slice(0, 5).forEach(t => {
+          let statusColor = 'var(--color-text-muted)';
+          if (t.status === 'completed') statusColor = 'var(--color-success)';
+          else if (t.status === 'inprogress') statusColor = 'var(--color-warning)';
+          
+          let priorityColor = 'var(--color-text-muted)';
+          if (t.priority === 'High') priorityColor = 'var(--color-danger)';
+          else if (t.priority === 'Medium') priorityColor = 'var(--color-warning)';
+
+          const clickAction = user.role === 'admin'
+            ? `switchView('admin-tasks'); document.getElementById('admin-task-search').value = '${t.title.replace(/'/g, "\\'")}'; renderAdminTasks(); document.getElementById('search-results-dropdown').style.display = 'none';`
+            : `switchView('employee-dashboard'); document.getElementById('search-results-dropdown').style.display = 'none';`;
+
+          html += `
+            <div class="search-item" onclick="${clickAction}">
+              <div class="search-item-title">${t.title}</div>
+              <div class="search-item-meta">
+                <span>Status: <strong style="color: ${statusColor};">${t.status}</strong></span>
+                <span>Priority: <strong style="color: ${priorityColor};">${t.priority}</strong></span>
+              </div>
+            </div>
+          `;
+        });
+
+        if (filtered.length > 5) {
+          const clickAction = user.role === 'admin'
+            ? `switchView('admin-tasks'); document.getElementById('admin-task-search').value = '${query.replace(/'/g, "\\'")}'; renderAdminTasks(); document.getElementById('search-results-dropdown').style.display = 'none';`
+            : `switchView('employee-dashboard'); document.getElementById('search-results-dropdown').style.display = 'none';`;
+
+          html += `
+            <div class="search-item" onclick="${clickAction}" style="text-align: center; font-weight: 600; color: var(--color-primary); font-size: 11.5px; border-top: 1px solid var(--color-border); margin-top: 4px; padding-top: 8px;">
+              View all ${filtered.length} matching tasks
+            </div>
+          `;
+        }
+
+        dropdown.innerHTML = html;
+      }, 150);
+    }
+
+    // Close search dropdown on click outside
+    document.addEventListener('click', (e) => {
+      const dropdown = document.getElementById('search-results-dropdown');
+      const input = document.getElementById('global-search-input');
+      if (dropdown && input && !dropdown.contains(e.target) && !input.contains(e.target)) {
+        dropdown.style.display = 'none';
+      }
+    });
+
+    // Initialize Page
+    window.addEventListener('DOMContentLoaded', () => {
+      initDatabase();
+      checkSession();
+    });
+  </script>
+</body>
+</html>

@@ -10,12 +10,12 @@ router.use(authMiddleware);
 // Retrieve tasks (admin gets all, employee gets assigned)
 router.get('/', taskController.getAllTasks);
 
-// Status update (accessible by both role controllers, checked at database logic level)
+// Status update (employees can update their task status)
 router.patch('/:id/status', taskController.updateTaskStatus);
 
-// CRUD routes
+// CRUD routes (admin only)
 router.post('/', restrictTo('admin'), taskController.createTask);
-router.put('/:id', restrictTo('admin', 'employee'), taskController.updateTask);
-router.delete('/:id', restrictTo('admin', 'employee'), taskController.deleteTask);
+router.put('/:id', restrictTo('admin'), taskController.updateTask);
+router.delete('/:id', restrictTo('admin'), taskController.deleteTask);
 
 module.exports = router;

@@ -132,14 +132,7 @@
   <script src="js/employee.js"></script>
   <script>
     window.addEventListener('DOMContentLoaded', () => {
-      auth.checkSession(['admin', 'employee']);
-      
-      const user = auth.getCurrentUser();
-      if (user && user.role !== 'admin') {
-        const addBtn = document.querySelector('.page-actions button');
-        if (addBtn) addBtn.style.display = 'none';
-      }
-      
+      auth.checkSession('admin');
       loadEmployeeDirectory();
     });
   </script>

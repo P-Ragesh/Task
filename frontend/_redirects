@@ -1,0 +1,6 @@
+# Netlify Redirects File
+# This proxies all frontend /api/* requests to your Hugging Face backend.
+# Replace 'your-username-spacename' with your actual Hugging Face Space name.
+# Example: https://rageshp-taskmonitor.hf.space/api/:splat
+
+/api/*  https://your-username-spacename.hf.space/api/:splat  200!

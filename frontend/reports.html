@@ -10,11 +10,51 @@
   <link rel="stylesheet" href="css/animations.css">
   <style>
     @media print {
-      body { background-color: white; color: black; }
-      .sidebar, .top-nav, .page-actions, .filters-bar { display: none !important; }
-      .app-container { grid-template-columns: 1fr; }
-      .content-area { padding: 0; }
-      .card { border: none; box-shadow: none; padding: 0; }
+      * {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+        color-adjust: exact !important;
+      }
+      body { 
+        background-color: white !important; 
+        color: black !important; 
+      }
+      .sidebar, 
+      .top-nav, 
+      .page-actions, 
+      .filters-bar,
+      .btn,
+      .toast-container { 
+        display: none !important; 
+      }
+      .app-container { 
+        grid-template-columns: 1fr !important; 
+        display: block !important;
+      }
+      .content-area { 
+        padding: 20px !important; 
+        overflow: visible !important;
+        height: auto !important;
+      }
+      .main-viewport {
+        overflow: visible !important;
+        height: auto !important;
+      }
+      .card { 
+        border: none !important; 
+        box-shadow: none !important; 
+        padding: 0 !important; 
+        background-color: white !important;
+      }
+      .data-table th,
+      .data-table td {
+        border: 1px solid #ccc !important;
+        background-color: white !important;
+        color: black !important;
+      }
+      .data-table th {
+        background-color: #f3f4f6 !important;
+      }
     }
   </style>
 </head>

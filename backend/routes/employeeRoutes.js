@@ -7,11 +7,11 @@ const { restrictTo } = require('../middleware/roleMiddleware');
 // Protect all routes under employees
 router.use(authMiddleware);
 
-router.get('/', restrictTo('admin', 'employee'), employeeController.getAllEmployees);
-router.get('/validate-email', restrictTo('admin', 'employee'), employeeController.validateEmailRealWorld);
+router.get('/', restrictTo('admin'), employeeController.getAllEmployees);
+router.get('/validate-email', restrictTo('admin'), employeeController.validateEmailRealWorld);
 router.post('/', restrictTo('admin'), employeeController.createEmployee);
 router.put('/:id', restrictTo('admin'), employeeController.updateEmployee);
-router.delete('/:id', restrictTo('admin', 'employee'), employeeController.deleteEmployee);
+router.delete('/:id', restrictTo('admin'), employeeController.deleteEmployee);
 router.post('/:id/reset-password', restrictTo('admin'), employeeController.resetEmployeePassword);
 
 module.exports = router;

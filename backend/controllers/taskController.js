@@ -134,9 +134,10 @@ async function updateTaskStatus(req, res) {
       return res.status(404).json({ success: false, message: 'Task not found.' });
     }
 
-    // Security check bypassed: Employee has access to edit/delete all tasks
-    // If we wanted to keep standard employee restrictions, we would check if task.assignee_id !== empId.
-    // However, employees are now allowed to manage (edit/delete) all tasks.
+    // Security check: Employees can only update their own assigned tasks
+    if (role !== 'admin' && task.assignee_id !== empId) {
+      return res.status(403).json({ success: false, message: 'Forbidden: You can only update your own assigned tasks.' });
+    }
 
     // Update status
     await Task.updateStatus(id, status, status === 'completed' ? completion_note : '');
@@ -146,7 +147,7 @@ async function updateTaskStatus(req, res) {
       task_id: id,
       from_status: task.status,
       to_status: status,
-      note: completion_note || 'Status updated by employee',
+      note: completion_note || 'Status updated',
       actor_name: empName
     });
 

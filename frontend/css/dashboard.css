@@ -510,3 +510,27 @@
   max-width: 260px;
   margin: 0 auto 16px;
 }
+
+/* ----------------------------------------------------
+   DASHBOARD PRINT STYLES
+   ---------------------------------------------------- */
+@media print {
+  .table-responsive {
+    overflow: visible !important;
+    width: 100% !important;
+  }
+  
+  .data-table {
+    page-break-inside: auto !important;
+  }
+  
+  .data-table tr {
+    page-break-inside: avoid !important;
+    page-break-after: auto !important;
+  }
+  
+  .data-table td,
+  .data-table th {
+    page-break-inside: avoid !important;
+  }
+}

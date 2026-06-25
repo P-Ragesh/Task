@@ -88,15 +88,6 @@ function renderSidebarLinks(role) {
         <i class="ti ti-checkbox"></i>
         <span>My Tasks</span>
       </a>
-      <div class="menu-label">Management</div>
-      <a class="sidebar-link" href="task-management.html" id="link-task-management">
-        <i class="ti ti-checkbox"></i>
-        <span>Tasks</span>
-      </a>
-      <a class="sidebar-link" href="employee-management.html" id="link-employee-management">
-        <i class="ti ti-users"></i>
-        <span>Employees</span>
-      </a>
       <div class="menu-label">Settings</div>
       <a class="sidebar-link" href="profile.html" id="link-profile">
         <i class="ti ti-settings"></i>

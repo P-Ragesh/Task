@@ -192,14 +192,7 @@
   <script src="js/task.js"></script>
   <script>
     window.addEventListener('DOMContentLoaded', () => {
-      auth.checkSession(['admin', 'employee']);
-      
-      const user = auth.getCurrentUser();
-      if (user && user.role !== 'admin') {
-        const newBtn = document.querySelector('button[onclick="openNewTaskModal()"]');
-        if (newBtn) newBtn.style.display = 'none';
-      }
-      
+      auth.checkSession('admin');
       loadAdminTasks();
     });
   </script>
